@@ -1,0 +1,63 @@
+<div class="share-modal p-5">
+      <div class="modal-header">
+        <div class="header-content">
+          <mat-icon class="share-icon">share</mat-icon>
+          <div>
+            <h2 mat-dialog-title>Share Dashboard</h2>
+            <p class="subtitle">Anyone with this link can view the dashboard</p>
+          </div>
+        </div>
+        <button mat-icon-button mat-dialog-close class="close-button">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-content" *ngIf="!data.isLoading">
+        <div class="link-section">
+          <label class="link-label">Shareable Link</label>
+          <div class="link-input-container">
+            <input class="link-input" 
+                   [value]="data.shareUrl" 
+                   readonly 
+                   #linkInput>
+            <button class="copy-button" 
+                    (click)="copyToClipboard()"
+                    title="Copy link">
+              <mat-icon>content_copy</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-item">
+            <mat-icon class="info-icon">schedule</mat-icon>
+            <div class="info-text">
+              <span class="info-label">Link expires on</span>
+              <span class="info-value">{{ formatDate(data.expiryDate) }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <mat-icon class="info-icon">visibility</mat-icon>
+            <div class="info-text">
+              <span class="info-label">Access level</span>
+              <span class="info-value">View only</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading-content" *ngIf="data.isLoading">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Generating share link...</p>
+      </div>
+
+      <div class="modal-actions" *ngIf="!data.isLoading">
+        <button mat-button mat-dialog-close>
+          Close
+        </button>
+        <button mat-raised-button color="primary" (click)="copyToClipboard()">
+          <mat-icon>content_copy</mat-icon>
+          Copy Link
+        </button>
+      </div>
+    </div>

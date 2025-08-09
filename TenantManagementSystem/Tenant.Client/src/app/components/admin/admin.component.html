@@ -1,0 +1,31 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 flex flex-col items-center justify-center p-4">
+  <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center">
+    <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center drop-shadow-lg">Tenant Management Admin</h1>
+    <button (click)="openModal()" class="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full shadow-lg text-lg font-semibold hover:scale-105 transition-transform duration-200 mb-8">
+      + Add New Entry
+    </button>
+    <!-- Modal -->
+    <div *ngIf="showModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative animate-fadeIn">
+        <button (click)="closeModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
+        <h2 class="text-2xl font-bold mb-4 text-center">Create New Entry</h2>
+        <form (ngSubmit)="addEntry()" #entryForm="ngForm" class="space-y-4">
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Entry Name</label>
+            <input type="text" [(ngModel)]="entryName" name="entryName" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Start Date</label>
+            <input type="date" [(ngModel)]="startDate" name="startDate" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">End Date</label>
+            <input type="date" [(ngModel)]="endDate" name="endDate" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+          <button type="submit" [disabled]="!entryForm.form.valid" class="w-full py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold hover:scale-105 transition-transform duration-200 mt-4">Create Entry</button>
+        </form>
+      </div>
+    </div>
+    <!-- End Modal -->
+  </div>
+</div>

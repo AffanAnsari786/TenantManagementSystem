@@ -1,0 +1,148 @@
+<div class="shared-dashboard-container">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+        <p>Loading dashboard...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="error-container">
+        <mat-icon class="error-icon">error_outline</mat-icon>
+        <h2>Dashboard Not Available</h2>
+        <p>{{ error }}</p>
+        <button mat-raised-button color="primary" (click)="goToLogin()">
+          Go to Login
+        </button>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div *ngIf="!loading && !error && dashboardData">
+        <!-- Header with Read-Only Notice -->
+        <mat-card class="readonly-notice">
+          <div class="notice-content">
+            <mat-icon color="accent">visibility</mat-icon>
+            <div>
+              <h3>Read-Only Dashboard</h3>
+              <p>You are viewing a shared dashboard. You cannot make any changes.</p>
+              <div class="live-indicator">
+                <div class="pulse-dot"></div>
+                <span>Live updates every 5 seconds</span>
+              </div>
+            </div>
+          </div>
+        </mat-card>
+
+        <!-- Tenant Info Header -->
+        <mat-card class="tenant-info">
+          <div class="tenant-header">
+            <div>
+              <h2>{{ dashboardData.name }}</h2>
+              <p class="date-range">{{ formatDate(dashboardData.startDate) }} - {{ formatDate(dashboardData.endDate) }}</p>
+            </div>
+          </div>
+        </mat-card>
+
+        <!-- Payment Entries Table -->
+        <mat-card *ngIf="hasPayments" class="my-11">
+          <mat-card-header class="table-header">
+            <mat-card-title>Payment Entries</mat-card-title>
+          </mat-card-header>
+
+          <mat-card-content>
+                      <!-- Desktop/Tablet Table View -->
+          <table mat-table [dataSource]="paymentRecords" class="mat-elevation-z2 p-5">
+            <ng-container matColumnDef="rentPeriod">
+              <th mat-header-cell *matHeaderCellDef>Rent Period</th>
+              <td mat-cell *matCellDef="let record">
+                {{ record.rentPeriod | date:'MMMM yyyy' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Amount</th>
+              <td mat-cell *matCellDef="let record">
+                ₹{{ record.amount }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="receivedDate">
+              <th mat-header-cell *matHeaderCellDef>Received On</th>
+              <td mat-cell *matCellDef="let record">
+                {{ record.receivedDate | date:'MMM d, yyyy' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let record">
+                <span class="status-paid">
+                  <mat-icon>check_circle</mat-icon>
+                  Paid
+                </span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- No Data Row -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell" colspan="4">
+                <div class="no-data">
+                  <mat-icon>info</mat-icon>
+                  <p>No payment entries yet</p>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Mobile Card View -->
+          <div class="mobile-shared-entries">
+            <div class="mobile-shared-card" *ngFor="let record of paymentRecords">
+              <div class="mobile-shared-header">
+                <div class="mobile-shared-title">
+                  {{ record.rentPeriod | date:'MMMM yyyy' }}
+                </div>
+                <div class="mobile-shared-amount">
+                  ₹{{ record.amount }}
+                </div>
+              </div>
+              
+              <div class="mobile-shared-details">
+                <div class="mobile-shared-detail">
+                  <div class="mobile-shared-label">Received On</div>
+                  <div class="mobile-shared-value">{{ record.receivedDate | date:'MMM d, yyyy' }}</div>
+                </div>
+                <div class="mobile-shared-detail">
+                  <div class="mobile-shared-label">Created</div>
+                  <div class="mobile-shared-value">{{ record.createdDate | date:'MMM d, yyyy' }}</div>
+                </div>
+              </div>
+              
+              <div class="mobile-shared-status">
+                <mat-icon style="font-size: 16px; width: 16px; height: 16px;">check_circle</mat-icon>
+                Paid
+              </div>
+            </div>
+            
+            <!-- No Data for Mobile -->
+            <div class="mobile-shared-card" *ngIf="paymentRecords.length === 0">
+              <div class="no-data">
+                <mat-icon>info</mat-icon>
+                <p>No payment entries yet</p>
+              </div>
+            </div>
+          </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- No Payments State -->
+        <mat-card *ngIf="!hasPayments" class="no-payments">
+          <div class="no-payments-content">
+            <mat-icon>payment</mat-icon>
+            <h3>No Payment Entries</h3>
+            <p>This tenant doesn't have any payment entries yet.</p>
+          </div>
+        </mat-card>
+      </div>
+    </div>

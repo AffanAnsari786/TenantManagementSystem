@@ -1,0 +1,429 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Personal\\Proj_New\\Tenant.Api\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|d:\\personal\\proj_new\\tenant.api\\tenant.api\\models\\record.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|solutionrelative:tenant.api\\models\\record.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|d:\\personal\\proj_new\\tenant.api\\tenant.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|solutionrelative:tenant.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|d:\\personal\\proj_new\\tenant.api\\tenant.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|solutionrelative:tenant.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|d:\\personal\\proj_new\\tenant.api\\tenant.api\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|solutionrelative:tenant.api\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|d:\\personal\\proj_new\\tenant.api\\tenant.api\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|solutionrelative:tenant.api\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|d:\\personal\\proj_new\\tenant.api\\tenant.api\\controllers\\sharecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|solutionrelative:tenant.api\\controllers\\sharecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|d:\\personal\\proj_new\\tenant.api\\tenant.api\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|solutionrelative:tenant.api\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|d:\\personal\\proj_new\\tenant.api\\tenant.api\\controllers\\entriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|solutionrelative:tenant.api\\controllers\\entriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|d:\\personal\\proj_new\\tenant.api\\tenant.api\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|solutionrelative:tenant.api\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|d:\\personal\\proj_new\\tenant.api\\tenant.api\\models\\sharedlink.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|solutionrelative:tenant.api\\models\\sharedlink.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|d:\\personal\\proj_new\\tenant.api\\tenant.api\\models\\entry.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1AAA39CE-1D78-41E9-9515-5AA083BFBCF8}|Tenant.Api\\Tenant.Api.csproj|solutionrelative:tenant.api\\models\\entry.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 53,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{13b12e3e-c1b4-4539-9371-4fe9a0d523fc}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:135:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:132:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:168:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:169:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:170:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:171:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:172:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:173:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:167:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:166:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:165:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:164:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:163:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:162:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:161:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:160:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:159:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:158:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:157:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:156:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:155:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:154:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:153:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:152:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:151:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:150:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:148:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:147:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:146:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:144:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:149:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:142:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:141:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:140:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:145:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:143:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:135:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:139:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\appsettings.json",
+              "RelativeDocumentMoniker": "Tenant.Api\\appsettings.json",
+              "ToolTip": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\appsettings.json",
+              "RelativeToolTip": "Tenant.Api\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-08-09T15:00:38.19Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Program.cs",
+              "RelativeDocumentMoniker": "Tenant.Api\\Program.cs",
+              "ToolTip": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Program.cs",
+              "RelativeToolTip": "Tenant.Api\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T15:00:19.801Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Record.cs",
+              "DocumentMoniker": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Models\\Record.cs",
+              "RelativeDocumentMoniker": "Tenant.Api\\Models\\Record.cs",
+              "ToolTip": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Models\\Record.cs",
+              "RelativeToolTip": "Tenant.Api\\Models\\Record.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T13:56:50.985Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Entry.cs",
+              "DocumentMoniker": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Models\\Entry.cs",
+              "RelativeDocumentMoniker": "Tenant.Api\\Models\\Entry.cs",
+              "ToolTip": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Models\\Entry.cs",
+              "RelativeToolTip": "Tenant.Api\\Models\\Entry.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T13:56:01.571Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "Tenant.Api\\Data\\AppDbContext.cs",
+              "ToolTip": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "Tenant.Api\\Data\\AppDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T13:55:51.708Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ShareController.cs",
+              "DocumentMoniker": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Controllers\\ShareController.cs",
+              "RelativeDocumentMoniker": "Tenant.Api\\Controllers\\ShareController.cs",
+              "ToolTip": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Controllers\\ShareController.cs",
+              "RelativeToolTip": "Tenant.Api\\Controllers\\ShareController.cs",
+              "ViewState": "AgIAAE8AAAAAAAAAAAAiwFkAAABLAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T13:52:43.204Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "LoginController.cs",
+              "DocumentMoniker": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Controllers\\LoginController.cs",
+              "RelativeDocumentMoniker": "Tenant.Api\\Controllers\\LoginController.cs",
+              "ToolTip": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Controllers\\LoginController.cs",
+              "RelativeToolTip": "Tenant.Api\\Controllers\\LoginController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T13:52:27.686Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "EntriesController.cs",
+              "DocumentMoniker": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Controllers\\EntriesController.cs",
+              "RelativeDocumentMoniker": "Tenant.Api\\Controllers\\EntriesController.cs",
+              "ToolTip": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Controllers\\EntriesController.cs",
+              "RelativeToolTip": "Tenant.Api\\Controllers\\EntriesController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T13:52:03.448Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "Tenant.Api\\Properties\\launchSettings.json",
+              "ToolTip": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Properties\\launchSettings.json",
+              "RelativeToolTip": "Tenant.Api\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAkwA4AAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-08-09T13:51:31.743Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "SharedLink.cs",
+              "DocumentMoniker": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Models\\SharedLink.cs",
+              "RelativeDocumentMoniker": "Tenant.Api\\Models\\SharedLink.cs",
+              "ToolTip": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Models\\SharedLink.cs",
+              "RelativeToolTip": "Tenant.Api\\Models\\SharedLink.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T13:56:57.819Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "User.cs",
+              "DocumentMoniker": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Models\\User.cs",
+              "RelativeDocumentMoniker": "Tenant.Api\\Models\\User.cs",
+              "ToolTip": "D:\\Personal\\Proj_New\\Tenant.Api\\Tenant.Api\\Models\\User.cs",
+              "RelativeToolTip": "Tenant.Api\\Models\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T13:57:04.781Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 93,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:421934398:0:{81164725-9a96-4ece-a4cb-440d8fd285e5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:6:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

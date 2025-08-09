@@ -1,0 +1,42 @@
+<div class="entry-details-container">
+  <mat-card>
+    <mat-card-title>Entry Details Hii</mat-card-title>
+    <mat-card-content>
+      <h2>{{ entry.name }}</h2>
+      <p>Period: {{ entry.startDate | date }} - {{ entry.endDate | date }}</p>
+      <table mat-table [dataSource]="entry.records">
+        <ng-container matColumnDef="month">
+          <th mat-header-cell *matHeaderCellDef>Month</th>
+          <td mat-cell *matCellDef="let record">{{ record.month }}</td>
+        </ng-container>
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let record">{{ record.date | date }}</td>
+        </ng-container>
+        <ng-container matColumnDef="money">
+          <th mat-header-cell *matHeaderCellDef>Money</th>
+          <td mat-cell *matCellDef="let record">{{ record.money | currency }}</td>
+        </ng-container>
+        <ng-container matColumnDef="remainingMoney">
+          <th mat-header-cell *matHeaderCellDef>Remaining Money</th>
+          <td mat-cell *matCellDef="let record">{{ record.remainingMoney | currency }}</td>
+        </ng-container>
+        <ng-container matColumnDef="ownerSign">
+          <th mat-header-cell *matHeaderCellDef>Owner Sign</th>
+          <td mat-cell *matCellDef="let record">{{ record.ownerSign }}</td>
+        </ng-container>
+        <ng-container matColumnDef="tenantSign">
+          <th mat-header-cell *matHeaderCellDef>Tenant Sign</th>
+          <td mat-cell *matCellDef="let record">
+            <button mat-button (click)="onUpdateTenantSign(record)">{{ record.tenantSign || 'Sign' }}</button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-raised-button color="primary" (click)="onAddRecord()">Add Record</button>
+    </mat-card-actions>
+  </mat-card>
+</div>

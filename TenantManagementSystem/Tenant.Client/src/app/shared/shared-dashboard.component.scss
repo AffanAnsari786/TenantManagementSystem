@@ -1,0 +1,545 @@
+// Shared Dashboard Modern Styling
+:host {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.shared-dashboard-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+// Loading State
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: white;
+  text-align: center;
+  
+  .loading-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+  }
+  
+  p {
+    font-size: 1.25rem;
+    opacity: 0.9;
+  }
+}
+
+// Error State
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: white;
+  text-align: center;
+  
+  .error-icon {
+    font-size: 5rem;
+    width: 5rem;
+    height: 5rem;
+    margin-bottom: 2rem;
+    color: #fbbf24;
+  }
+  
+  h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    font-size: 1.25rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+    max-width: 600px;
+  }
+  
+  button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+// Read-Only Notice
+.readonly-notice {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.1));
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  margin-bottom: 2rem;
+  padding: 0;
+  box-shadow: 0 8px 32px rgba(79, 70, 229, 0.1);
+  
+  .notice-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      text-align: center;
+      gap: 1rem;
+    }
+    
+    mat-icon {
+      font-size: 3rem;
+      width: 3rem;
+      height: 3rem;
+      color: #4f46e5;
+      flex-shrink: 0;
+    }
+    
+    div {
+      flex: 1;
+      
+      h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 0.5rem 0;
+      }
+      
+      p {
+        font-size: 1rem;
+        color: #64748b;
+        margin: 0 0 1rem 0;
+        line-height: 1.6;
+      }
+      
+      .live-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        
+        @media (max-width: 768px) {
+          justify-content: center;
+        }
+        
+        .pulse-dot {
+          width: 12px;
+          height: 12px;
+          background: #10b981;
+          border-radius: 50%;
+          animation: pulse 2s infinite;
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+        
+        span {
+          font-size: 0.875rem;
+          color: #10b981;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+// Tenant Info Card
+.tenant-info {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  margin-bottom: 2rem;
+  padding: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #4f46e5, #7c3aed, #ec4899);
+  }
+  
+  .tenant-header {
+    padding: 2rem;
+    
+    h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #1a1a1a;
+      margin: 0 0 0.5rem 0;
+      background: linear-gradient(135deg, #1e293b, #475569);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      
+      @media (max-width: 768px) {
+        font-size: 2rem;
+      }
+    }
+    
+    .date-range {
+      font-size: 1.125rem;
+      color: #64748b;
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+}
+
+// Payment Entries Section
+.mat-mdc-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  
+  .table-header {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+    padding: 2rem;
+    
+    .mat-mdc-card-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0;
+    }
+  }
+  
+  .mat-mdc-card-content {
+    padding: 0;
+  }
+}
+
+// Table Styling
+.mat-mdc-table {
+  width: 100%;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  .mat-mdc-header-row {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    
+    .mat-mdc-header-cell {
+      color: #475569;
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 2px solid #e2e8f0;
+      border-right: 1px solid rgba(226, 232, 240, 0.5);
+      
+      &:last-child {
+        border-right: none;
+      }
+      
+      @media (max-width: 768px) {
+        padding: 1rem;
+        font-size: 0.6875rem;
+      }
+    }
+  }
+  
+  .mat-mdc-row {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      background: rgba(79, 70, 229, 0.02);
+    }
+    
+    &:nth-child(even) {
+      background: rgba(248, 250, 252, 0.5);
+    }
+    
+    .mat-mdc-cell {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #f1f5f9;
+      border-right: 1px solid rgba(241, 245, 249, 0.7);
+      font-size: 0.875rem;
+      color: #374151;
+      vertical-align: middle;
+      
+      &:last-child {
+        border-right: none;
+      }
+      
+      &:first-child {
+        font-weight: 600;
+        color: #1e293b;
+      }
+      
+      @media (max-width: 768px) {
+        padding: 1rem;
+        font-size: 0.8125rem;
+      }
+    }
+  }
+  
+  // No data row styling
+  .mat-mdc-row.mat-mdc-no-data-row {
+    .mat-mdc-cell {
+      text-align: center;
+      padding: 3rem 2rem;
+      border: none;
+    }
+  }
+}
+
+// Status styling for the shared dashboard
+.status-paid {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #059669;
+  font-weight: 600;
+  font-size: 0.875rem;
+  
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    color: #10b981;
+  }
+}
+
+// Mobile Cards
+.mobile-shared-entries {
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+    padding: 1rem;
+  }
+}
+
+.mobile-shared-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+  
+  .mobile-shared-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    
+    .mobile-shared-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    
+    .mobile-shared-amount {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #059669;
+    }
+  }
+  
+  .mobile-shared-details {
+    margin-bottom: 1rem;
+  }
+  
+  .mobile-shared-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .mobile-shared-label {
+      font-size: 0.875rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+    
+    .mobile-shared-value {
+      font-size: 0.875rem;
+      color: #374151;
+      font-weight: 600;
+    }
+  }
+  
+  .mobile-shared-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #059669;
+    font-size: 0.875rem;
+    font-weight: 600;
+    
+    mat-icon {
+      color: #10b981;
+    }
+  }
+}
+
+// No Payments State
+.no-payments {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  text-align: center;
+  
+  .no-payments-content {
+    padding: 4rem 2rem;
+    
+    mat-icon {
+      font-size: 4rem;
+      width: 4rem;
+      height: 4rem;
+      color: #cbd5e1;
+      margin-bottom: 1.5rem;
+    }
+    
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #475569;
+      margin: 0 0 1rem 0;
+    }
+    
+    p {
+      font-size: 1rem;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.6;
+    }
+  }
+}
+
+// No Data State
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  
+  mat-icon {
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    font-size: 1rem;
+    color: #64748b;
+    margin: 0;
+  }
+}
+
+// Hide table on mobile
+@media (max-width: 768px) {
+  .mat-mdc-table {
+    display: none;
+  }
+}
+
+// Show table on desktop
+@media (min-width: 769px) {
+  .mobile-shared-entries {
+    display: none;
+  }
+}
+
+// Animations
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 1024px) {
+  .shared-dashboard-container {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .shared-dashboard-container {
+    padding: 1rem;
+  }
+  
+  .readonly-notice .notice-content {
+    padding: 1.5rem;
+  }
+  
+  .tenant-info .tenant-header {
+    padding: 1.5rem;
+    
+    h2 {
+      font-size: 1.75rem;
+    }
+  }
+  
+  .mat-mdc-card .table-header {
+    padding: 1.5rem;
+    
+    .mat-mdc-card-title {
+      font-size: 1.5rem;
+    }
+  }
+}

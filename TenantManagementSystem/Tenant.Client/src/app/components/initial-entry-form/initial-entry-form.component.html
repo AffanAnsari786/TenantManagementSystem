@@ -1,0 +1,36 @@
+<div class="entry-form-container" mat-dialog-content>
+  <h2 mat-dialog-title>Create New Entry</h2>
+  
+  <form [formGroup]="entryForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="name">Tenant Name*</label>
+      <input type="text" id="name" formControlName="name" placeholder="Enter tenant name" />
+      <div class="error" *ngIf="entryForm.get('name')?.touched && entryForm.get('name')?.hasError('required')">
+        Name is required
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="startDate">Start Date*</label>
+        <input type="date" id="startDate" formControlName="startDate" />
+        <div class="error" *ngIf="entryForm.get('startDate')?.touched && entryForm.get('startDate')?.hasError('required')">
+          Start date is required
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="endDate">End Date*</label>
+        <input type="date" id="endDate" formControlName="endDate" />
+        <div class="error" *ngIf="entryForm.get('endDate')?.touched && entryForm.get('endDate')?.hasError('required')">
+          End date is required
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions" mat-dialog-actions>
+      <button type="button" class="cancel" (click)="onCancel()">Cancel</button>
+      <button type="submit" [disabled]="entryForm.invalid">Create</button>
+    </div>
+  </form>
+</div>

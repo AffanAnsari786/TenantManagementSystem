@@ -1,0 +1,108 @@
+<div class="app-container" *ngIf="showToolbar">
+      <!-- Modern Navigation Header -->
+      <header class="modern-header">
+        <div class="header-content">
+          <!-- Logo and Brand -->
+          <div class="brand-section">
+            <button class="hamburger-btn" (click)="toggleSidebar()">
+              <span class="hamburger-line"></span>
+              <span class="hamburger-line"></span>
+              <span class="hamburger-line"></span>
+            </button>
+            
+            <div class="brand-info">
+              <div class="brand-icon">
+                <mat-icon>account_balance</mat-icon>
+              </div>
+              <div class="brand-text">
+                <h1>Tenant Manager</h1>
+                <span>Rental Management</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop Navigation -->
+          <nav class="desktop-nav">
+            <a routerLink="/home" class="nav-link" routerLinkActive="active">
+              <mat-icon>home</mat-icon>
+              <span>Home</span>
+            </a>
+            <a routerLink="/dashboard" class="nav-link" routerLinkActive="active">
+              <mat-icon>dashboard</mat-icon>
+              <span>Dashboard</span>
+            </a>
+          </nav>
+
+          <!-- User Actions -->
+          <div class="user-actions">
+            <button class="user-menu-btn" (click)="onLogout()">
+              <mat-icon>logout</mat-icon>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Mobile Sidebar -->
+      <aside class="mobile-sidebar" [class.open]="sidenavOpened">
+        <div class="sidebar-overlay" (click)="closeSidebar()"></div>
+        <div class="sidebar-content">
+          <!-- Sidebar Header -->
+          <div class="sidebar-header">
+            <div class="sidebar-brand">
+              <div class="sidebar-brand-icon">
+                <mat-icon>account_balance</mat-icon>
+              </div>
+              <div class="sidebar-brand-text">
+                <h2>Tenant Manager</h2>
+                <span>Menu</span>
+              </div>
+            </div>
+            <button class="close-btn" (click)="closeSidebar()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+
+          <!-- Sidebar Navigation -->
+          <nav class="sidebar-nav">
+            <a routerLink="/home" class="sidebar-nav-item" (click)="closeSidebar()" routerLinkActive="active">
+              <div class="nav-item-icon">
+                <mat-icon>home</mat-icon>
+              </div>
+              <div class="nav-item-content">
+                <span class="nav-item-title">Home</span>
+                <span class="nav-item-desc">Welcome page</span>
+              </div>
+            </a>
+            
+            <a routerLink="/dashboard" class="sidebar-nav-item" (click)="closeSidebar()" routerLinkActive="active">
+              <div class="nav-item-icon">
+                <mat-icon>dashboard</mat-icon>
+              </div>
+              <div class="nav-item-content">
+                <span class="nav-item-title">Dashboard</span>
+                <span class="nav-item-desc">Manage payments</span>
+              </div>
+            </a>
+            
+            <button class="sidebar-nav-item logout-item" (click)="onLogout()">
+              <div class="nav-item-icon">
+                <mat-icon>logout</mat-icon>
+              </div>
+              <div class="nav-item-content">
+                <span class="nav-item-title">Logout</span>
+                <span class="nav-item-desc">Sign out</span>
+              </div>
+            </button>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+    
+    <!-- For routes that don't show toolbar -->
+    <router-outlet *ngIf="!showToolbar"></router-outlet>

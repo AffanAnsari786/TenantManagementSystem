@@ -1,0 +1,39 @@
+<div class="entry-form-container" mat-dialog-content>
+  <h2 mat-dialog-title>{{ getFormTitle() }}</h2>
+  
+  <form [formGroup]="entryForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="rentPeriod">Rent Period*</label>
+      <input type="date" id="rentPeriod" formControlName="rentPeriod" [readonly]="isPreviewMode" />
+      <div class="error" *ngIf="entryForm.get('rentPeriod')?.touched && entryForm.get('rentPeriod')?.hasError('required')">
+        Rent period is required
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="amount">Amount*</label>
+      <input type="number" id="amount" formControlName="amount" placeholder="Enter amount" [readonly]="isPreviewMode" />
+      <div class="error" *ngIf="entryForm.get('amount')?.touched && entryForm.get('amount')?.hasError('required')">
+        Amount is required
+      </div>
+      <div class="error" *ngIf="entryForm.get('amount')?.touched && entryForm.get('amount')?.hasError('min')">
+        Amount must be greater than 0
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="receivedDate">Payment Received Date*</label>
+      <input type="date" id="receivedDate" formControlName="receivedDate" [readonly]="isPreviewMode" />
+      <div class="error" *ngIf="entryForm.get('receivedDate')?.touched && entryForm.get('receivedDate')?.hasError('required')">
+        Payment received date is required
+      </div>
+    </div>
+
+    <div class="form-actions" mat-dialog-actions>
+      <button type="button" class="cancel" (click)="onCancel()">{{ isPreviewMode ? 'Close' : 'Cancel' }}</button>
+      <button *ngIf="!isPreviewMode" type="submit" [disabled]="entryForm.invalid">
+        {{ isEditMode ? 'Update' : 'Save' }}
+      </button>
+    </div>
+  </form>
+</div>

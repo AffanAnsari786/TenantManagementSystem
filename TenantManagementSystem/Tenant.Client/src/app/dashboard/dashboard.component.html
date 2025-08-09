@@ -1,0 +1,228 @@
+<div class="dashboard-container">
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-background"></div>
+    <div class="hero-content">
+      <div class="welcome-badge">
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+      </div>
+      <h1 class="hero-title">{{ tenantName }}</h1>
+      <p class="hero-subtitle">Rental Management System</p>
+      <div class="date-pill">
+        <mat-icon>calendar_today</mat-icon>
+        <span>{{ formatDate(startDate) }} - {{ formatDate(endDate) }}</span>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <button class="action-btn primary-btn" (click)="onAddPayment()">
+        <div class="btn-icon">
+          <mat-icon>add_circle</mat-icon>
+        </div>
+        <div class="btn-content">
+          <span class="btn-title">Add Payment</span>
+          <span class="btn-subtitle">Create new entry</span>
+        </div>
+      </button>
+      <button class="action-btn secondary-btn" (click)="onShareDashboard()" [disabled]="!hasPayments">
+        <div class="btn-icon">
+          <mat-icon>share</mat-icon>
+        </div>
+        <div class="btn-content">
+          <span class="btn-title">Share Dashboard</span>
+          <span class="btn-subtitle">Generate link</span>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-section" *ngIf="hasPayments">
+    <div class="stats-grid">
+      <div class="stat-card revenue-card">
+        <div class="stat-icon">
+          <mat-icon>trending_up</mat-icon>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">₹{{ getTotalRevenue() | number:'1.0-0' }}</div>
+          <div class="stat-label">Total Revenue</div>
+        </div>
+        <div class="stat-trend positive">
+          <mat-icon>arrow_upward</mat-icon>
+        </div>
+      </div>
+      
+      <div class="stat-card payments-card">
+        <div class="stat-icon">
+          <mat-icon>payment</mat-icon>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ paymentEntries.length }}</div>
+          <div class="stat-label">Total Payments</div>
+        </div>
+        <div class="stat-trend positive">
+          <mat-icon>arrow_upward</mat-icon>
+        </div>
+      </div>
+      
+      <div class="stat-card average-card">
+        <div class="stat-icon">
+          <mat-icon>analytics</mat-icon>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">₹{{ getAveragePayment() | number:'1.0-0' }}</div>
+          <div class="stat-label">Average Payment</div>
+        </div>
+        <div class="stat-trend neutral">
+          <mat-icon>remove</mat-icon>
+        </div>
+      </div>
+      
+      <div class="stat-card recent-card">
+        <div class="stat-icon">
+          <mat-icon>schedule</mat-icon>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getRecentPaymentsCount() }}</div>
+          <div class="stat-label">This Month</div>
+        </div>
+        <div class="stat-trend positive">
+          <mat-icon>arrow_upward</mat-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Entries Section -->
+  <div class="payments-section">
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Payment History</h2>
+        <p>Track and manage all payment entries</p>
+      </div>
+      <div class="section-actions" *ngIf="hasPayments">
+        <button class="add-payment-btn" (click)="onAddPayment()">
+          <mat-icon>add_circle</mat-icon>
+          <span>Add Payment</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Payment Table (Desktop) -->
+    <div class="payment-table-container" *ngIf="hasPayments">
+      <div class="table-wrapper">
+        <table class="payment-table">
+          <thead>
+            <tr>
+              <th>Rent Period</th>
+              <th>Amount</th>
+              <th>Received On</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of paymentEntries; let i = index" 
+                [style.animation-delay]="i * 50 + 'ms'"
+                class="table-row">
+              <td class="period-cell">
+                <div class="period-info">
+                  <span class="month">{{ entry.rentPeriod | date:'MMMM' }}</span>
+                  <span class="year">{{ entry.rentPeriod | date:'yyyy' }}</span>
+                </div>
+              </td>
+              <td class="amount-cell">
+                <div class="amount-display">
+                  <span class="currency">₹</span>
+                  <span class="amount">{{ entry.amount | number:'1.0-0' }}</span>
+                </div>
+              </td>
+              <td class="date-cell">
+                {{ entry.receivedDate | date:'MMM d, yyyy' }}
+              </td>
+              <td class="status-cell">
+                <div class="status-badge paid">
+                  <mat-icon>check_circle</mat-icon>
+                  <span>Paid</span>
+                </div>
+              </td>
+              <td class="actions-cell">
+                <div class="action-buttons">
+                  <button class="action-btn view-btn" (click)="onPreviewEntry(entry)" title="View Details">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button class="action-btn edit-btn" (click)="onEditEntry(entry)" title="Edit Entry">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button class="action-btn delete-btn" (click)="onDeleteEntry(entry)" title="Delete Entry">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Payment Cards (Mobile) -->
+    <div class="payment-cards-mobile" *ngIf="hasPayments">
+      <div class="payment-card-mobile" *ngFor="let entry of paymentEntries; let i = index" 
+           [style.animation-delay]="i * 100 + 'ms'">
+        <div class="card-header">
+          <div class="period-badge">
+            <span class="month">{{ entry.rentPeriod | date:'MMM' }}</span>
+            <span class="year">{{ entry.rentPeriod | date:'yyyy' }}</span>
+          </div>
+          <div class="status-badge paid">
+            <mat-icon>check_circle</mat-icon>
+            <span>Paid</span>
+          </div>
+        </div>
+        
+        <div class="card-amount">
+          <span class="currency">₹</span>
+          <span class="amount">{{ entry.amount | number:'1.0-0' }}</span>
+        </div>
+        
+        <div class="card-details">
+          <div class="detail-item">
+            <span class="label">Received On:</span>
+            <span class="value">{{ entry.receivedDate | date:'MMM d, yyyy' }}</span>
+          </div>
+          <!-- <div class="detail-item">
+            <span class="label">Created:</span>
+            <span class="value">{{ entry.createdDate | date:'MMM d, yyyy' }}</span>
+          </div> -->
+        </div>
+        
+        <div class="card-actions">
+          <button class="action-btn view-btn" (click)="onPreviewEntry(entry)">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button class="action-btn edit-btn" (click)="onEditEntry(entry)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button class="action-btn delete-btn" (click)="onDeleteEntry(entry)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!hasPayments">
+      <div class="empty-state-content">
+        <div class="empty-icon">
+          <mat-icon>payment</mat-icon>
+        </div>
+        <h3>No Payments Yet</h3>
+        <p>Start by creating your first payment entry to track rental payments</p>
+        <button class="cta-button" (click)="onAddPayment()">
+          <mat-icon>add_circle</mat-icon>
+          <span>Create First Payment</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,313 @@
+[
+  {
+    "ContainingType": "Tenant.Api.Controllers.EntriesController",
+    "Method": "GetEntries",
+    "RelativePath": "api/Entries",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[Tenant.Api.Models.Entry, Tenant.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Tenant.Api.Controllers.EntriesController",
+    "Method": "CreateEntry",
+    "RelativePath": "api/Entries",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "entry",
+        "Type": "Tenant.Api.Models.Entry",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Tenant.Api.Models.Entry",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Tenant.Api.Controllers.EntriesController",
+    "Method": "AddRecord",
+    "RelativePath": "api/Entries/{entryId}/records",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "entryId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "record",
+        "Type": "Tenant.Api.Models.Record",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Tenant.Api.Models.Record",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Tenant.Api.Controllers.EntriesController",
+    "Method": "UpdateRecord",
+    "RelativePath": "api/Entries/{entryId}/records/{recordId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "entryId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "recordId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "updatedRecord",
+        "Type": "Tenant.Api.Models.Record",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Tenant.Api.Models.Record",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Tenant.Api.Controllers.EntriesController",
+    "Method": "DeleteRecord",
+    "RelativePath": "api/Entries/{entryId}/records/{recordId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "entryId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "recordId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Tenant.Api.Controllers.EntriesController",
+    "Method": "UpdateTenantSign",
+    "RelativePath": "api/Entries/{entryId}/records/{recordId}/tenant-sign",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "entryId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "recordId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "tenantSign",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Tenant.Api.Models.Record",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Tenant.Api.Controllers.EntriesController",
+    "Method": "GetEntry",
+    "RelativePath": "api/Entries/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Tenant.Api.Models.Entry",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Tenant.Api.Controllers.ShareController",
+    "Method": "GetSharedDashboard",
+    "RelativePath": "api/Share/{token}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "token",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Tenant.Api.Models.Entry",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Tenant.Api.Controllers.ShareController",
+    "Method": "RevokeShareLink",
+    "RelativePath": "api/Share/{token}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "token",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Tenant.Api.Controllers.ShareController",
+    "Method": "GenerateShareLink",
+    "RelativePath": "api/Share/generate",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Tenant.Api.Models.ShareLinkRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Tenant.Api.Models.ShareLinkResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Tenant.Api.Controllers.ShareController",
+    "Method": "GetShareLinksForEntry",
+    "RelativePath": "api/Share/links/{entryId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "entryId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[Tenant.Api.Models.SharedLink, Tenant.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Tenant.Api.Controllers.WeatherForecastController",
+    "Method": "Get",
+    "RelativePath": "WeatherForecast",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[Tenant.Api.WeatherForecast, Tenant.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "EndpointName": "GetWeatherForecast"
+  }
+]
