@@ -22,7 +22,10 @@
             <label class="block text-gray-700 font-semibold mb-1">End Date</label>
             <input type="date" [(ngModel)]="endDate" name="endDate" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
           </div>
-          <button type="submit" [disabled]="!entryForm.form.valid" class="w-full py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold hover:scale-105 transition-transform duration-200 mt-4">Create Entry</button>
+          <div *ngIf="getDateValidationError()" class="text-red-600 text-sm font-semibold">
+            {{ getDateValidationError() }}
+          </div>
+          <button type="submit" [disabled]="!entryForm.form.valid || !isDateRangeValid()" class="w-full py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold hover:scale-105 transition-transform duration-200 mt-4">Create Entry</button>
         </form>
       </div>
     </div>

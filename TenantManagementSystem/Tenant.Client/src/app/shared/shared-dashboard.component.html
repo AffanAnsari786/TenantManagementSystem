@@ -43,14 +43,14 @@
         </mat-card>
 
         <!-- Payment Entries Table -->
-        <mat-card *ngIf="hasPayments" class="my-11">
+        <mat-card *ngIf="hasPayments" class="my-11 records">
           <mat-card-header class="table-header">
             <mat-card-title>Payment Entries</mat-card-title>
           </mat-card-header>
 
           <mat-card-content>
                       <!-- Desktop/Tablet Table View -->
-          <table mat-table [dataSource]="paymentRecords" class="mat-elevation-z2 p-5">
+          <table mat-table [dataSource]="paymentRecords" class="mat-elevation-z2 p-5 records">
             <ng-container matColumnDef="rentPeriod">
               <th mat-header-cell *matHeaderCellDef>Rent Period</th>
               <td mat-cell *matCellDef="let record">

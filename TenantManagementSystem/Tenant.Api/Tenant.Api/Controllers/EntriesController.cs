@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Tenant.Api.Contracts;
+using Tenant.Api.Data;
 using Tenant.Api.Models;
+using Tenant.Api.Services;
 
 namespace Tenant.Api.Controllers
 {
@@ -7,100 +11,159 @@ namespace Tenant.Api.Controllers
     [Route("api/[controller]")]
     public class EntriesController : ControllerBase
     {
-        // Static in-memory data
-        private static List<Entry> Entries = new List<Entry>();
-        private static int entryIdCounter = 1;
-        private static int recordIdCounter = 1;
+        private readonly AppDbContext _context;
+        private readonly ICurrentUserService _currentUser;
 
-        // Static constructor to initialize empty data
-        static EntriesController()
+        public EntriesController(AppDbContext context, ICurrentUserService currentUser)
         {
-            // Initialize with empty data - entries will be created by the dashboard
+            _context = context;
+            _currentUser = currentUser;
         }
 
-        // GET: api/entries
+        // GET: api/entries - returns only entries belonging to the logged-in user.
+        // Entries with UserId null (e.g. created before user-scoping) are "claimed" by the current user so they show after reload.
         [HttpGet]
-        public ActionResult<IEnumerable<Entry>> GetEntries()
+        public async Task<ActionResult<IEnumerable<Entry>>> GetEntries()
         {
-            return Ok(Entries);
+            var userId = await _currentUser.GetCurrentUserIdAsync();
+            if (userId == null)
+                return Unauthorized(new { message = "Please log in to view your entries." });
+
+            var entries = await _context.Entries
+                .Include(e => e.Records)
+                .Where(e => e.UserId == userId || e.UserId == null)
+                .OrderBy(e => e.Id)
+                .ToListAsync();
+
+            // Claim unassigned entries so they stay with this user on next load
+            var toClaim = entries.Where(e => e.UserId == null).ToList();
+            foreach (var entry in toClaim)
+            {
+                entry.UserId = userId;
+            }
+            if (toClaim.Count > 0)
+                await _context.SaveChangesAsync();
+
+            return Ok(entries);
         }
 
         // GET: api/entries/{id}
         [HttpGet("{id}")]
-        public ActionResult<Entry> GetEntry(int id)
+        public async Task<ActionResult<Entry>> GetEntry(int id)
         {
-            var entry = Entries.FirstOrDefault(e => e.Id == id);
+            var userId = await _currentUser.GetCurrentUserIdAsync();
+            if (userId == null)
+                return Unauthorized(new { message = "Please log in." });
+
+            var entry = await _context.Entries
+                .Include(e => e.Records)
+                .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
             if (entry == null) return NotFound();
             return Ok(entry);
         }
 
-        // Static method for internal use by ShareController
-        public static Entry? GetEntryById(int id)
-        {
-            return Entries.FirstOrDefault(e => e.Id == id);
-        }
-
-        // POST: api/entries (admin only)
+        // POST: api/entries
         [HttpPost]
-        public ActionResult<Entry> CreateEntry([FromBody] Entry entry)
+        public async Task<ActionResult<Entry>> CreateEntry([FromBody] CreateEntryRequest request)
         {
-            entry.Id = entryIdCounter++;
-            entry.Records = new List<Record>();
-            Entries.Add(entry);
+            var userId = await _currentUser.GetCurrentUserIdAsync();
+            if (userId == null)
+                return Unauthorized(new { message = "Please log in to create entries." });
+
+            var entry = new Entry
+            {
+                Name = request.Name.Trim(),
+                StartDate = request.StartDate!.Value,
+                EndDate = request.EndDate!.Value,
+                UserId = userId
+            };
+
+            _context.Entries.Add(entry);
+            await _context.SaveChangesAsync();
             return Ok(entry);
         }
 
-        // POST: api/entries/{entryId}/records (admin only)
+        // POST: api/entries/{entryId}/records
         [HttpPost("{entryId}/records")]
-        public ActionResult<Record> AddRecord(int entryId, [FromBody] Record record)
+        public async Task<ActionResult<Record>> AddRecord(int entryId, [FromBody] CreateRecordRequest request)
         {
-            var entry = Entries.FirstOrDefault(e => e.Id == entryId);
-            if (entry == null) return NotFound();
-            record.Id = recordIdCounter++;
-            entry.Records.Add(record);
+            var userId = await _currentUser.GetCurrentUserIdAsync();
+            if (userId == null) return Unauthorized();
+
+            var entryExists = await _context.Entries.AnyAsync(e => e.Id == entryId && e.UserId == userId);
+            if (!entryExists) return NotFound();
+
+            var record = new Record
+            {
+                EntryId = entryId,
+                RentPeriod = request.RentPeriod!.Value,
+                Amount = request.Amount,
+                ReceivedDate = request.ReceivedDate!.Value,
+                CreatedDate = DateTime.UtcNow
+            };
+
+            _context.Records.Add(record);
+            await _context.SaveChangesAsync();
             return Ok(record);
         }
 
         // PUT: api/entries/{entryId}/records/{recordId}
         [HttpPut("{entryId}/records/{recordId}")]
-        public ActionResult<Record> UpdateRecord(int entryId, int recordId, [FromBody] Record updatedRecord)
+        public async Task<ActionResult<Record>> UpdateRecord(int entryId, int recordId, [FromBody] UpdateRecordRequest updatedRecord)
         {
-            var entry = Entries.FirstOrDefault(e => e.Id == entryId);
+            var userId = await _currentUser.GetCurrentUserIdAsync();
+            if (userId == null) return Unauthorized();
+
+            var entry = await _context.Entries.FirstOrDefaultAsync(e => e.Id == entryId && e.UserId == userId);
             if (entry == null) return NotFound();
-            var record = entry.Records.FirstOrDefault(r => r.Id == recordId);
+
+            var record = await _context.Records
+                .FirstOrDefaultAsync(r => r.Id == recordId && r.EntryId == entryId);
             if (record == null) return NotFound();
 
-            // Update record properties
-            record.RentPeriod = updatedRecord.RentPeriod;
+            record.RentPeriod = updatedRecord.RentPeriod!.Value;
             record.Amount = updatedRecord.Amount;
-            record.ReceivedDate = updatedRecord.ReceivedDate;
-            // Keep original ID and CreatedDate
+            record.ReceivedDate = updatedRecord.ReceivedDate!.Value;
 
+            await _context.SaveChangesAsync();
             return Ok(record);
         }
 
         // DELETE: api/entries/{entryId}/records/{recordId}
         [HttpDelete("{entryId}/records/{recordId}")]
-        public ActionResult DeleteRecord(int entryId, int recordId)
+        public async Task<ActionResult> DeleteRecord(int entryId, int recordId)
         {
-            var entry = Entries.FirstOrDefault(e => e.Id == entryId);
+            var userId = await _currentUser.GetCurrentUserIdAsync();
+            if (userId == null) return Unauthorized();
+
+            var entry = await _context.Entries.FirstOrDefaultAsync(e => e.Id == entryId && e.UserId == userId);
             if (entry == null) return NotFound();
-            var record = entry.Records.FirstOrDefault(r => r.Id == recordId);
+
+            var record = await _context.Records
+                .FirstOrDefaultAsync(r => r.Id == recordId && r.EntryId == entryId);
             if (record == null) return NotFound();
 
-            entry.Records.Remove(record);
+            _context.Records.Remove(record);
+            await _context.SaveChangesAsync();
             return Ok(new { message = "Record deleted successfully" });
         }
 
-        // PUT: api/entries/{entryId}/records/{recordId}/tenant-sign (tenant only)
+        // PUT: api/entries/{entryId}/records/{recordId}/tenant-sign
         [HttpPut("{entryId}/records/{recordId}/tenant-sign")]
-        public ActionResult<Record> UpdateTenantSign(int entryId, int recordId, [FromBody] string tenantSign)
+        public async Task<ActionResult<Record>> UpdateTenantSign(int entryId, int recordId, [FromBody] TenantSignRequest request)
         {
-            var entry = Entries.FirstOrDefault(e => e.Id == entryId);
+            var userId = await _currentUser.GetCurrentUserIdAsync();
+            if (userId == null) return Unauthorized();
+
+            var entry = await _context.Entries.FirstOrDefaultAsync(e => e.Id == entryId && e.UserId == userId);
             if (entry == null) return NotFound();
-            var record = entry.Records.FirstOrDefault(r => r.Id == recordId);
+
+            var record = await _context.Records
+                .FirstOrDefaultAsync(r => r.Id == recordId && r.EntryId == entryId);
             if (record == null) return NotFound();
-            record.TenantSign = tenantSign;
+
+            record.TenantSign = request.TenantSign;
+            await _context.SaveChangesAsync();
             return Ok(record);
         }
     }

@@ -88,7 +88,7 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           if (data) {
-            this.updateDashboardData(data);
+            this.updateDashboardData(this.normalizeSharedEntry(data as SharedEntry | Record<string, unknown>));
           }
         },
         error: (error) => {
@@ -104,10 +104,28 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Shared link flow: When you copy the share link and open it in another tab (or send to another user),
+   * the app loads /shared/{token}. This component calls GET /api/share/{token} with no login required.
+   * The API looks up the token in SharedLinks, returns the linked Entry and its Records. Anyone with
+   * the link can view that dashboard read-only. Ensure the API is running and the link is not expired.
+   */
+  private normalizeSharedEntry(data: SharedEntry | Record<string, unknown>): SharedEntry {
+    const raw = data as Record<string, unknown>;
+    const records = raw['records'] ?? raw['Records'];
+    return {
+      id: (raw['id'] ?? raw['Id']) as number,
+      name: (raw['name'] ?? raw['Name']) as string,
+      startDate: (raw['startDate'] ?? raw['StartDate']) as string,
+      endDate: (raw['endDate'] ?? raw['EndDate']) as string,
+      records: Array.isArray(records) ? (records as SharedEntry['records']) : []
+    };
+  }
+
   private updateDashboardData(data: SharedEntry): void {
     const previousRecordsCount = this.paymentRecords.length;
     const previousRecordIds = this.paymentRecords.map(r => r.id);
-    
+
     this.dashboardData = data;
     const newRecords = data.records || [];
     const newRecordIds = newRecords.map(r => r.id);
@@ -161,27 +179,26 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadSharedDashboard(token: string): void {
-    // Only make API calls in browser environment
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-    
-    this.shareService.getSharedDashboard(token).subscribe({
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    // Pass token as-is; avoid double-decode (e.g. + in URL can become space)
+    const safeToken = decodeURIComponent(token || '').trim() || token;
+    this.shareService.getSharedDashboard(safeToken).subscribe({
       next: (data) => {
-        this.updateDashboardData(data);
+        this.updateDashboardData(this.normalizeSharedEntry(data));
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading shared dashboard:', error);
-        if (error.status === 404) {
+        if (error?.status === 404) {
           this.error = 'This shared link has expired or is no longer valid.';
-        } else if (error.status === 0) {
-          this.error = 'Unable to connect to the server. Please check your internet connection and try again.';
+        } else if (error?.status === 0 || error?.message?.includes('Http failure')) {
+          this.error = 'Cannot reach the server. Make sure the API is running (e.g. on the same machine) and try again.';
         } else {
           this.error = 'Unable to load the shared dashboard. Please try again later.';
         }
         this.loading = false;
-        this.stopAutoRefresh(); // Stop auto-refresh on error
+        this.stopAutoRefresh();
       }
     });
   }

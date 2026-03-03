@@ -1,6 +1,6 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
@@ -49,13 +49,14 @@ interface PaymentEntry {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   tenantName: string = '';
   startDate: Date = new Date();
   endDate: Date = new Date();
   paymentEntries: PaymentEntry[] = [];
   displayedColumns: string[] = ['rentPeriod', 'amount', 'receivedDate', 'actions'];
-  currentEntryId: number = 0; // This will be set when entry is created or loaded
+  currentEntryId: number = 0;
+  loading = true;
 
   get hasPayments(): boolean {
     return this.paymentEntries.length > 0;
@@ -63,117 +64,90 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private dialog: MatDialog,
     private shareService: ShareService,
     private snackBar: MatSnackBar,
     private entryService: EntryService,
     private tenantDataService: TenantDataService,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {
-    // Constructor logic moved to ngOnInit for proper initialization
-  }
+  ) {}
 
   ngOnInit() {
-    this.loadDashboardData();
+    this.route.paramMap.subscribe(params => {
+      const entryIdParam = params.get('entryId');
+      if (entryIdParam) {
+        const id = +entryIdParam;
+        if (!isNaN(id)) {
+          this.loadEntryById(id);
+          return;
+        }
+      }
+      this.handleNoEntryId();
+    });
   }
 
-  private loadDashboardData() {
-    // Check service first, then navigation state with new entry data
-    const serviceData = this.tenantDataService.getTenantData();
-    const routerState = this.router.getCurrentNavigation()?.extras?.state as { newEntry: any } | null;
-    
-    // Only access history in browser environment
-    let historyState: { newEntry: any } | null = null;
-    if (isPlatformBrowser(this.platformId)) {
-      historyState = history.state as { newEntry: any } | null;
+  ngOnDestroy() {}
+
+  private loadEntryById(entryId: number): void {
+    this.loading = true;
+    this.entryService.getEntry(entryId).subscribe({
+      next: (entry) => {
+        this.currentEntryId = entry.id;
+        this.tenantName = entry.name;
+        this.startDate = new Date(entry.startDate);
+        this.endDate = new Date(entry.endDate);
+        this.paymentEntries = (entry.records || []).map(r => ({
+          id: r.id,
+          rentPeriod: new Date(r.rentPeriod),
+          amount: r.amount,
+          receivedDate: new Date(r.receivedDate),
+          createdDate: new Date(r.createdDate)
+        }));
+        this.loading = false;
+      },
+      error: (err) => {
+        this.loading = false;
+        if (err?.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
+        if (err?.status === 404) {
+          this.router.navigate(['/all-tenants']);
+          return;
+        }
+        this.snackBar.open('Failed to load tenant dashboard.', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  private handleNoEntryId(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      this.loading = false;
+      return;
     }
-    
-    // Try service data first, then router state, then history state
-    const newEntryData = serviceData || routerState?.newEntry || historyState?.newEntry;
-    
-    console.log('Service data:', serviceData);
-    console.log('Navigation state:', routerState);
-    console.log('History state:', historyState);
-    console.log('Final new entry data:', newEntryData);
-    
+    const serviceData = this.tenantDataService.getTenantData();
+    const historyState = history.state as { newEntry?: any } | null;
+    const newEntryData = serviceData || historyState?.newEntry;
+
     if (newEntryData) {
-      // Create entry on backend  
       const createRequest: CreateEntryRequest = {
         name: newEntryData.name,
         startDate: new Date(newEntryData.startDate).toISOString(),
         endDate: new Date(newEntryData.endDate).toISOString()
       };
-
-      console.log('Creating entry with request:', createRequest);
-
       this.entryService.createEntry(createRequest).subscribe({
         next: (entry) => {
-          console.log('Entry created successfully:', entry);
-          this.currentEntryId = entry.id;
-          this.tenantName = entry.name;
-          this.startDate = new Date(entry.startDate);
-          this.endDate = new Date(entry.endDate);
-          this.paymentEntries = entry.records.map(r => ({
-            id: r.id,
-            rentPeriod: new Date(r.rentPeriod),
-            amount: r.amount,
-            receivedDate: new Date(r.receivedDate),
-            createdDate: new Date(r.createdDate)
-          }));
-          
-          // Clear the service data after using it
           this.tenantDataService.clearTenantData();
+          this.router.navigate(['/dashboard', entry.id], { replaceUrl: true });
         },
-        error: (error) => {
-          console.error('Error creating entry:', error);
+        error: (err) => {
           this.snackBar.open('Error creating tenant entry', 'Close', { duration: 3000 });
+          this.router.navigate(['/all-tenants']);
         }
       });
     } else {
-      console.log('No new entry data found, loading existing entries');
-      // Load existing entries
-      // Only make API calls in browser environment
-      if (isPlatformBrowser(this.platformId)) {
-        this.entryService.getEntries().subscribe({
-          next: (entries) => {
-            console.log('Loaded entries:', entries);
-            if (entries.length > 0) {
-              const entry = entries[0]; // Use the first entry for now
-              this.currentEntryId = entry.id;
-              this.tenantName = entry.name;
-              this.startDate = new Date(entry.startDate);
-              this.endDate = new Date(entry.endDate);
-              this.paymentEntries = entry.records.map(r => ({
-                id: r.id,
-                rentPeriod: new Date(r.rentPeriod),
-                amount: r.amount,
-                receivedDate: new Date(r.receivedDate),
-                createdDate: new Date(r.createdDate)
-              }));
-            } else {
-              // No entries found, user probably came directly to dashboard
-              // We'll create an entry when they add their first payment
-              console.log('No entries found, setting default values');
-              this.tenantName = 'Default Tenant';
-              this.startDate = new Date();
-              this.endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
-            }
-          },
-          error: (error) => {
-            console.error('Error loading entries:', error);
-            // Set default values on error
-            this.tenantName = 'Default Tenant';
-            this.startDate = new Date();
-            this.endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-          }
-        });
-      } else {
-        // During SSR, set default values
-        console.log('SSR mode - setting default values');
-        this.tenantName = 'Default Tenant';
-        this.startDate = new Date();
-        this.endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-      }
+      this.router.navigate(['/all-tenants']);
     }
   }
 

@@ -28,6 +28,13 @@
       </div>
     </div>
 
+    <div class="error" *ngIf="(entryForm.get('startDate')?.touched || entryForm.get('endDate')?.touched) && entryForm.hasError('startDateAfterOrEqualEndDate')">
+      Start date must be earlier than end date
+    </div>
+    <div class="error" *ngIf="(entryForm.get('startDate')?.touched || entryForm.get('endDate')?.touched) && entryForm.hasError('rentPeriodTooShort')">
+      Rent period must be at least 30 days (1 month)
+    </div>
+
     <div class="form-actions" mat-dialog-actions>
       <button type="button" class="cancel" (click)="onCancel()">Cancel</button>
       <button type="submit" [disabled]="entryForm.invalid">Create</button>

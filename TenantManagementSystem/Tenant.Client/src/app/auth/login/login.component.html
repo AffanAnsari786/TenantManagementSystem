@@ -27,6 +27,7 @@
         </div>
         
         <form class="login-form" (ngSubmit)="onLogin()">
+          <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
           <div class="form-group">
             <label for="username">Username</label>
             <div class="input-wrapper">
@@ -44,16 +45,19 @@
           
           <div class="form-group">
             <label for="password">Password</label>
-            <div class="input-wrapper">
+            <div class="input-wrapper password-wrapper">
               <mat-icon class="input-icon">lock</mat-icon>
               <input 
                 id="password"
-                type="password" 
+                [type]="showPassword ? 'text' : 'password'" 
                 [(ngModel)]="password" 
                 name="password" 
                 placeholder="Enter your password"
                 required
                 autocomplete="current-password">
+              <button type="button" class="password-toggle" (click)="toggleShowPassword()" tabindex="-1" [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+                <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
             </div>
           </div>
           

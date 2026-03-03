@@ -1,10 +1,14 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace Tenant.Api.Models
 {
     public class Record
     {
         public int Id { get; set; }
+        public int EntryId { get; set; }
+        [JsonIgnore]
+        public Entry? Entry { get; set; }
         public DateTime RentPeriod { get; set; }
         public decimal Amount { get; set; }
         public DateTime ReceivedDate { get; set; }

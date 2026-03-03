@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Tenant.Api.Models
 {
@@ -14,7 +15,10 @@ namespace Tenant.Api.Models
     
     public class ShareLinkRequest
     {
+        [Range(1, int.MaxValue)]
         public int EntryId { get; set; }
+
+        [Range(1, 365)]
         public int ExpiryDays { get; set; } = 30; // Default 30 days
     }
     

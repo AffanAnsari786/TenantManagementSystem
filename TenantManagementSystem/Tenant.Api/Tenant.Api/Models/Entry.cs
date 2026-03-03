@@ -9,6 +9,7 @@ namespace Tenant.Api.Models
         public string Name { get; set; } = string.Empty;
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public List<Record> Records { get; set; } = new List<Record>();
+        public int? UserId { get; set; }
+        public ICollection<Record> Records { get; set; } = new List<Record>();
     }
 }

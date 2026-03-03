@@ -1,6 +1,16 @@
 <div class="dashboard-container">
+  <div *ngIf="loading" class="dashboard-loading">
+    <mat-icon class="spin">hourglass_empty</mat-icon>
+    <p>Loading dashboard...</p>
+  </div>
+
+  <div *ngIf="!loading">
   <!-- Hero Section -->
   <div class="hero-section">
+    <a routerLink="/all-tenants" class="back-link">
+      <mat-icon>arrow_back</mat-icon>
+      <span>All Tenants</span>
+    </a>
     <div class="hero-background"></div>
     <div class="hero-content">
       <div class="welcome-badge">
@@ -224,5 +234,6 @@
         </button>
       </div>
     </div>
+  </div>
   </div>
 </div>

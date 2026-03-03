@@ -1,0 +1,95 @@
+<div class="all-tenants-container">
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-block">
+        <mat-icon class="page-icon">people</mat-icon>
+        <div>
+          <h1>All Tenants</h1>
+          <p>Tenants you manage — open a dashboard to view payments for each</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <mat-card class="tenants-card">
+    <div *ngIf="loading" class="loading-state">
+      <mat-icon class="spin">hourglass_empty</mat-icon>
+      <p>Loading tenants...</p>
+    </div>
+
+    <div *ngIf="error && !loading" class="error-state">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-raised-button color="primary" (click)="onRetry()">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+    </div>
+
+    <div *ngIf="!loading && !error && entries.length === 0" class="empty-state">
+      <mat-icon>person_add</mat-icon>
+      <h3>No tenants yet</h3>
+      <p>Go to Home and click "Get Started" to add your first tenant.</p>
+      <a mat-raised-button color="primary" routerLink="/home">
+        <mat-icon>home</mat-icon>
+        Go to Home
+      </a>
+    </div>
+
+    <div *ngIf="!loading && !error && entries.length > 0" class="table-wrap">
+      <!-- Desktop table -->
+      <table mat-table [dataSource]="entries" class="tenants-table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Tenant Name</th>
+          <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+        </ng-container>
+        <ng-container matColumnDef="startDate">
+          <th mat-header-cell *matHeaderCellDef>Start Date</th>
+          <td mat-cell *matCellDef="let row">{{ formatDate(row.startDate) }}</td>
+        </ng-container>
+        <ng-container matColumnDef="endDate">
+          <th mat-header-cell *matHeaderCellDef>End Date</th>
+          <td mat-cell *matCellDef="let row">{{ formatDate(row.endDate) }}</td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-chip" [class.active]="isActive(row.endDate)" [class.inactive]="!isActive(row.endDate)">
+              {{ isActive(row.endDate) ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="dashboard">
+          <th mat-header-cell *matHeaderCellDef>Dashboard</th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-raised-button color="primary" (click)="goToDashboard(row)">
+              <mat-icon>dashboard</mat-icon>
+              Dashboard
+            </button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let r; columns: displayedColumns;"></tr>
+      </table>
+
+      <!-- Mobile cards -->
+      <div class="mobile-cards">
+        <div class="tenant-card" *ngFor="let row of entries">
+          <div class="card-main">
+            <h3 class="tenant-name">{{ row.name }}</h3>
+            <div class="dates">
+              <span>{{ formatDate(row.startDate) }} – {{ formatDate(row.endDate) }}</span>
+            </div>
+            <span class="status-chip" [class.active]="isActive(row.endDate)" [class.inactive]="!isActive(row.endDate)">
+              {{ isActive(row.endDate) ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+          <button mat-raised-button color="primary" class="dashboard-btn" (click)="goToDashboard(row)">
+            <mat-icon>dashboard</mat-icon>
+            Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  </mat-card>
+</div>
