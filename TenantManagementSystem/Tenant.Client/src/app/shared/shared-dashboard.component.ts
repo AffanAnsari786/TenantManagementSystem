@@ -7,9 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { ShareService, SharedEntry } from '../services/share.service';
-import { interval, Subscription } from 'rxjs';
-import { switchMap, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { SignalRService } from '../services/signalr.service';
 
 interface PaymentRecord {
   id: number;
@@ -31,10 +29,12 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['rentPeriod', 'amount', 'receivedDate', 'status'];
   loading: boolean = true;
   error: string | null = null;
-  
-  private refreshSubscription: Subscription | null = null;
+
   private shareToken: string = '';
-  private refreshInterval = 5000; // 5 seconds
+  private signalRJoined = false;
+  /** Polling fallback so shared view updates even if SignalR fails (e.g. CORS, port). */
+  private pollIntervalId: ReturnType<typeof setInterval> | null = null;
+  private readonly POLL_INTERVAL_MS = 5000;
 
   get hasPayments(): boolean {
     return this.paymentRecords.length > 0;
@@ -44,6 +44,7 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private shareService: ShareService,
+    private signalRService: SignalRService,
     private snackBar: MatSnackBar,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
@@ -52,12 +53,9 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
     const token = this.route.snapshot.paramMap.get('token');
     if (token) {
       this.shareToken = token;
-      // Only load data in browser environment
       if (isPlatformBrowser(this.platformId)) {
         this.loadSharedDashboard(token);
-        this.startAutoRefresh();
       } else {
-        // During SSR, show loading state
         this.loading = true;
       }
     } else {
@@ -67,41 +65,12 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.stopAutoRefresh();
-  }
-
-  private startAutoRefresh(): void {
-    // Only start auto-refresh in browser environment
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
+    if (this.pollIntervalId) {
+      clearInterval(this.pollIntervalId);
+      this.pollIntervalId = null;
     }
-    
-    this.refreshSubscription = interval(this.refreshInterval)
-      .pipe(
-        switchMap(() => this.shareService.getSharedDashboard(this.shareToken)),
-        catchError((error) => {
-          console.error('Auto-refresh error:', error);
-          // Don't stop refreshing on error, just continue
-          return of(null);
-        })
-      )
-      .subscribe({
-        next: (data) => {
-          if (data) {
-            this.updateDashboardData(this.normalizeSharedEntry(data as SharedEntry | Record<string, unknown>));
-          }
-        },
-        error: (error) => {
-          console.error('Refresh subscription error:', error);
-        }
-      });
-  }
-
-  private stopAutoRefresh(): void {
-    if (this.refreshSubscription) {
-      this.refreshSubscription.unsubscribe();
-      this.refreshSubscription = null;
-    }
+    this.signalRService.offEntryUpdated();
+    this.signalRService.disconnect();
   }
 
   /**
@@ -125,50 +94,45 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
   private updateDashboardData(data: SharedEntry): void {
     const previousRecordsCount = this.paymentRecords.length;
     const previousRecordIds = this.paymentRecords.map(r => r.id);
+    const previousSignature = this.recordsSignature(this.paymentRecords);
 
     this.dashboardData = data;
     const newRecords = data.records || [];
     const newRecordIds = newRecords.map(r => r.id);
-    
+    const newSignature = this.recordsSignature(newRecords);
+
     this.paymentRecords = newRecords;
-    
+
     if (!this.loading) {
-      // Check for added records
       if (newRecords.length > previousRecordsCount) {
         const newRecordsCount = newRecords.length - previousRecordsCount;
         this.snackBar.open(
           `Dashboard updated! ${newRecordsCount} new payment(s) added.`,
           'Close',
-          {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          }
+          { duration: 3000, panelClass: ['success-snackbar'] }
         );
-      }
-      // Check for deleted records
-      else if (newRecords.length < previousRecordsCount) {
+      } else if (newRecords.length < previousRecordsCount) {
         const deletedRecordsCount = previousRecordsCount - newRecords.length;
         this.snackBar.open(
           `Dashboard updated! ${deletedRecordsCount} payment(s) deleted.`,
           'Close',
-          {
-            duration: 3000,
-            panelClass: ['info-snackbar']
-          }
+          { duration: 3000, panelClass: ['info-snackbar'] }
         );
-      }
-      // Check for updated records (same count but different data)
-      else if (previousRecordsCount > 0 && !this.arraysEqual(previousRecordIds, newRecordIds)) {
+      } else if (previousRecordsCount > 0 && (previousSignature !== newSignature || !this.arraysEqual(previousRecordIds, newRecordIds))) {
         this.snackBar.open(
           `Dashboard updated! Payment entries modified.`,
           'Close',
-          {
-            duration: 3000,
-            panelClass: ['info-snackbar']
-          }
+          { duration: 3000, panelClass: ['info-snackbar'] }
         );
       }
     }
+  }
+
+  private recordsSignature(records: PaymentRecord[]): string {
+    return records
+      .map(r => `${r.id}:${r.amount}:${r.receivedDate}:${r.rentPeriod ?? ''}`)
+      .sort()
+      .join('|');
   }
 
   private arraysEqual(a: number[], b: number[]): boolean {
@@ -187,6 +151,27 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.updateDashboardData(this.normalizeSharedEntry(data));
         this.loading = false;
+
+        // Start polling so shared view auto-refreshes even when SignalR doesn't connect
+        if (!this.pollIntervalId && this.shareToken) {
+          this.pollIntervalId = setInterval(() => {
+            if (this.shareToken) this.loadSharedDashboard(this.shareToken);
+          }, this.POLL_INTERVAL_MS);
+        }
+
+        const entryId = this.dashboardData?.id;
+        if (entryId != null && isPlatformBrowser(this.platformId) && !this.signalRJoined) {
+          this.signalRJoined = true;
+          this.signalRService.connect().then(() => {
+            this.signalRService.onEntryUpdated(() => {
+              this.loadSharedDashboard(this.shareToken);
+            });
+            this.signalRService.joinEntry(entryId);
+          }).catch((err) => {
+            console.warn('SignalR connect failed:', err);
+            this.signalRJoined = false;
+          });
+        }
       },
       error: (error) => {
         console.error('Error loading shared dashboard:', error);
@@ -198,7 +183,7 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
           this.error = 'Unable to load the shared dashboard. Please try again later.';
         }
         this.loading = false;
-        this.stopAutoRefresh();
+        this.signalRService.disconnect();
       }
     });
   }

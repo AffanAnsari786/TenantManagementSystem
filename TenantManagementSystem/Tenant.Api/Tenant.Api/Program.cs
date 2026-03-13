@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Tenant.Api.Data;
+using Tenant.Api.Hubs;
 using Tenant.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 //            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -27,7 +29,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); // Required for SignalR WebSocket from Angular
     });
 });
 
@@ -61,5 +64,6 @@ app.UseCors("AllowAngular");
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<SharedDashboardHub>("/hubs/shared-dashboard");
 
 app.Run();

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Tenant.Api.Contracts;
 using Tenant.Api.Data;
+using Tenant.Api.Hubs;
 using Tenant.Api.Models;
 using Tenant.Api.Services;
 
@@ -13,11 +15,13 @@ namespace Tenant.Api.Controllers
     {
         private readonly AppDbContext _context;
         private readonly ICurrentUserService _currentUser;
+        private readonly IHubContext<SharedDashboardHub> _hubContext;
 
-        public EntriesController(AppDbContext context, ICurrentUserService currentUser)
+        public EntriesController(AppDbContext context, ICurrentUserService currentUser, IHubContext<SharedDashboardHub> hubContext)
         {
             _context = context;
             _currentUser = currentUser;
+            _hubContext = hubContext;
         }
 
         // GET: api/entries - returns only entries belonging to the logged-in user.
@@ -104,6 +108,7 @@ namespace Tenant.Api.Controllers
 
             _context.Records.Add(record);
             await _context.SaveChangesAsync();
+            await _hubContext.Clients.Group($"Entry_{entryId}").SendAsync(SharedDashboardHub.EntryUpdatedMethod, entryId);
             return Ok(record);
         }
 
@@ -126,6 +131,7 @@ namespace Tenant.Api.Controllers
             record.ReceivedDate = updatedRecord.ReceivedDate!.Value;
 
             await _context.SaveChangesAsync();
+            await _hubContext.Clients.Group($"Entry_{entryId}").SendAsync(SharedDashboardHub.EntryUpdatedMethod, entryId);
             return Ok(record);
         }
 
@@ -145,6 +151,7 @@ namespace Tenant.Api.Controllers
 
             _context.Records.Remove(record);
             await _context.SaveChangesAsync();
+            await _hubContext.Clients.Group($"Entry_{entryId}").SendAsync(SharedDashboardHub.EntryUpdatedMethod, entryId);
             return Ok(new { message = "Record deleted successfully" });
         }
 
@@ -164,6 +171,7 @@ namespace Tenant.Api.Controllers
 
             record.TenantSign = request.TenantSign;
             await _context.SaveChangesAsync();
+            await _hubContext.Clients.Group($"Entry_{entryId}").SendAsync(SharedDashboardHub.EntryUpdatedMethod, entryId);
             return Ok(record);
         }
     }
