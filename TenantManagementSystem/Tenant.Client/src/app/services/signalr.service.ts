@@ -24,7 +24,7 @@ export class SignalRService {
   private hubUrl = 'http://localhost:5149/hubs/shared-dashboard';
   private connection: IHubConnection | null = null;
   /** Re-join this entry after automatic reconnect (groups are per-connection). */
-  private lastJoinedEntryId: number | null = null;
+  private lastJoinedEntryId: string | null = null;
 
   async connect(): Promise<void> {
     if (this.connection?.state === CONNECTED) {
@@ -58,7 +58,7 @@ export class SignalRService {
     }
   }
 
-  async joinEntry(entryId: number): Promise<void> {
+  async joinEntry(entryId: string): Promise<void> {
     if (!this.connection || this.connection.state !== CONNECTED) {
       await this.connect();
     }
@@ -68,9 +68,9 @@ export class SignalRService {
     }
   }
 
-  onEntryUpdated(callback: (entryId: number) => void): void {
+  onEntryUpdated(callback: (entryId: string) => void): void {
     if (!this.connection) return;
-    this.connection.on(ENTRY_UPDATED_METHOD, (...args: unknown[]) => callback(Number(args[0])));
+    this.connection.on(ENTRY_UPDATED_METHOD, (...args: unknown[]) => callback(String(args[0])));
   }
 
   offEntryUpdated(): void {

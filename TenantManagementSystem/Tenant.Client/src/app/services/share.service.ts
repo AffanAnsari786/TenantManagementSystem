@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface ShareLinkRequest {
-  entryId: number;
+  entryId: string;
   expiryDays?: number;
 }
 
@@ -14,12 +14,12 @@ export interface ShareLinkResponse {
 }
 
 export interface SharedEntry {
-  id: number;
+  id: string;
   name: string;
   startDate: string;
   endDate: string;
   records: Array<{
-    id: number;
+    id: string;
     rentPeriod: string;
     amount: number;
     receivedDate: string;

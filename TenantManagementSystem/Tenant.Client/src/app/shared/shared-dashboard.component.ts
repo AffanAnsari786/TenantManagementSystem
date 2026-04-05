@@ -8,9 +8,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { ShareService, SharedEntry } from '../services/share.service';
 import { SignalRService } from '../services/signalr.service';
+import { ReceiptService } from '../services/receipt.service';
 
 interface PaymentRecord {
-  id: number;
+  id: string;
   rentPeriod: string;
   amount: number;
   receivedDate: string;
@@ -46,6 +47,7 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
     private shareService: ShareService,
     private signalRService: SignalRService,
     private snackBar: MatSnackBar,
+    private receiptService: ReceiptService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -83,7 +85,7 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
     const raw = data as Record<string, unknown>;
     const records = raw['records'] ?? raw['Records'];
     return {
-      id: (raw['id'] ?? raw['Id']) as number,
+      id: (raw['id'] ?? raw['Id']) as string,
       name: (raw['name'] ?? raw['Name']) as string,
       startDate: (raw['startDate'] ?? raw['StartDate']) as string,
       endDate: (raw['endDate'] ?? raw['EndDate']) as string,
@@ -135,7 +137,7 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
       .join('|');
   }
 
-  private arraysEqual(a: number[], b: number[]): boolean {
+  private arraysEqual(a: string[], b: string[]): boolean {
     if (a.length !== b.length) return false;
     const sortedA = [...a].sort();
     const sortedB = [...b].sort();
@@ -198,5 +200,42 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
 
   goToLogin(): void {
     this.router.navigate(['/login']);
+  }
+
+  downloadReceipt(recordId: string) {
+    if (!this.dashboardData || !this.shareToken) return;
+    
+    // We pass the share token directly as the publicId. 
+    // The backend `publicId` query param actually expects the Entry's PublicId Guid,
+    // wait - looking at ReceiptsController: public async Task<IActionResult> DownloadSharedReceipt(int recordId, [FromQuery] string publicId)
+    // and ReceiptService: if (Guid.TryParse(publicId, out Guid parsedId)) { query = query.Where(r => r.Entry!.PublicId == parsedId); }
+    // We need the `PublicId` (the Guid).
+    // Let's modify the shared receipt download to accept the share token instead, or pass the entry ID.
+    // Wait, `ReceiptsController` expects `publicId`. In `SharedEntry` we have `id` which is the Entry's PublicId (since Entry Service maps PublicId to `id`).
+    // Let's pass `this.dashboardData.id`. 
+    
+    this.receiptService.downloadSharedReceipt(recordId, this.dashboardData.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const tenantNameSanitized = this.dashboardData!.name.replace(/[^a-zA-Z0-9]/g, '_');
+        const record = this.paymentRecords.find(r => r.id === recordId);
+        let monthYear = '';
+        if (record && record.rentPeriod) {
+            monthYear = new Date(record.rentPeriod).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).replace(' ', '');
+        } else {
+            monthYear = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).replace(' ', '');
+        }
+        
+        a.download = `Receipt_${monthYear}_${tenantNameSanitized}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Error downloading shared receipt:', error);
+        this.snackBar.open('Failed to download receipt', 'Close', { duration: 3000 });
+      }
+    });
   }
 }

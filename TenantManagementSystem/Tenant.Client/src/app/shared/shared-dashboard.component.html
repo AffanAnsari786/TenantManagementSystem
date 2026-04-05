@@ -82,6 +82,15 @@
               </td>
             </ng-container>
 
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let record">
+                <button mat-icon-button class="action-btn download-btn" (click)="downloadReceipt(record.id)" title="Download Receipt" color="primary">
+                  <mat-icon>download</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
@@ -119,9 +128,14 @@
                 </div>
               </div>
               
-              <div class="mobile-shared-status">
-                <mat-icon style="font-size: 16px; width: 16px; height: 16px;">check_circle</mat-icon>
-                Paid
+              <div class="mobile-shared-status" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px;">check_circle</mat-icon>
+                  Paid
+                </div>
+                <button mat-icon-button color="primary" (click)="downloadReceipt(record.id)" title="Download Receipt">
+                  <mat-icon>download</mat-icon>
+                </button>
               </div>
             </div>
             

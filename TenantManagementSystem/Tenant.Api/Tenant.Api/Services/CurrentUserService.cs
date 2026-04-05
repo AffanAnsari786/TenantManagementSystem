@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using Tenant.Api.Data;
 using Tenant.Api.Model;
 
@@ -7,27 +8,19 @@ namespace Tenant.Api.Services;
 public class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly AppDbContext _context;
 
-    public CurrentUserService(IHttpContextAccessor httpContextAccessor, AppDbContext context)
+    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
-        _context = context;
     }
 
-    public async Task<int?> GetCurrentUserIdAsync()
+    public Task<int?> GetCurrentUserIdAsync()
     {
-        var authHeader = _httpContextAccessor.HttpContext?.Request.Headers.Authorization.FirstOrDefault();
-        if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-            return null;
-
-        var token = authHeader["Bearer ".Length..].Trim();
-        if (string.IsNullOrEmpty(token))
-            return null;
-
-        var user = await _context.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Token == token && u.TokenExpiry.HasValue && u.TokenExpiry.Value > DateTime.UtcNow);
-        return user?.Id;
+        var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            return Task.FromResult<int?>(userId);
+        }
+        return Task.FromResult<int?>(null);
     }
 }

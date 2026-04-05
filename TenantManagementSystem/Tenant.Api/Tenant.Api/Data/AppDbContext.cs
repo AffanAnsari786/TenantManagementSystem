@@ -20,7 +20,12 @@ namespace Tenant.Api.Data
             {
                 e.ToTable("Entries");
                 e.HasKey(x => x.Id);
+                e.Property(x => x.PublicId).IsRequired();
+                e.HasIndex(x => x.PublicId).IsUnique();
                 e.Property(x => x.Name).HasMaxLength(200);
+                e.Property(x => x.Address).HasMaxLength(500);
+                e.Property(x => x.AadhaarNumber).HasMaxLength(12);
+                e.Property(x => x.PropertyName).HasMaxLength(200);
                 e.Property(x => x.StartDate).HasColumnType("date");
                 e.Property(x => x.EndDate).HasColumnType("date");
                 e.Property(x => x.UserId);
@@ -35,6 +40,8 @@ namespace Tenant.Api.Data
             {
                 e.ToTable("Records");
                 e.HasKey(x => x.Id);
+                e.Property(x => x.PublicId).IsRequired();
+                e.HasIndex(x => x.PublicId).IsUnique();
                 e.Property(x => x.RentPeriod).HasColumnType("date");
                 e.Property(x => x.Amount).HasPrecision(18, 2);
                 e.Property(x => x.ReceivedDate).HasColumnType("date");
@@ -64,8 +71,6 @@ namespace Tenant.Api.Data
                 e.Property(x => x.Username).HasMaxLength(100);
                 e.Property(x => x.Password).HasColumnName("PasswordHash").HasMaxLength(255);
                 e.Property(x => x.Role).HasMaxLength(50);
-                e.Property(x => x.Token).HasMaxLength(64);
-                e.Property(x => x.TokenExpiry);
                 e.HasIndex(x => x.Username).IsUnique();
             });
         }

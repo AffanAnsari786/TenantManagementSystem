@@ -14,6 +14,61 @@ public sealed class CreateEntryRequest : IValidatableObject
     [Required]
     public DateTime? EndDate { get; set; }
 
+    [StringLength(500)]
+    public string? Address { get; set; }
+
+    [StringLength(12, MinimumLength = 12)]
+    public string? AadhaarNumber { get; set; }
+
+    [StringLength(200)]
+    public string? PropertyName { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (StartDate is null || EndDate is null)
+        {
+            yield break;
+        }
+
+        if (StartDate.Value >= EndDate.Value)
+        {
+            yield return new ValidationResult(
+                "StartDate must be earlier than EndDate.",
+                new[] { nameof(StartDate), nameof(EndDate) });
+            yield break;
+        }
+
+        var days = (EndDate.Value - StartDate.Value).TotalDays;
+        if (days < 30)
+        {
+            yield return new ValidationResult(
+                "Rent period must be at least 30 days (1 month).",
+                new[] { nameof(StartDate), nameof(EndDate) });
+        }
+    }
+}
+
+public sealed class UpdateEntryRequest : IValidatableObject
+{
+    [Required]
+    [StringLength(200, MinimumLength = 1)]
+    public string Name { get; set; } = string.Empty;
+
+    [Required]
+    public DateTime? StartDate { get; set; }
+
+    [Required]
+    public DateTime? EndDate { get; set; }
+
+    [StringLength(500)]
+    public string? Address { get; set; }
+
+    [StringLength(12, MinimumLength = 12)]
+    public string? AadhaarNumber { get; set; }
+
+    [StringLength(200)]
+    public string? PropertyName { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (StartDate is null || EndDate is null)

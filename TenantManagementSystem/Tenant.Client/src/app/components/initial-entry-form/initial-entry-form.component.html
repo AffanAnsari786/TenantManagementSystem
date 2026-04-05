@@ -1,5 +1,5 @@
 <div class="entry-form-container" mat-dialog-content>
-  <h2 mat-dialog-title>Create New Entry</h2>
+  <h2 mat-dialog-title>{{ isEditMode ? 'Edit Tenant' : 'Create New Tenant' }}</h2>
   
   <form [formGroup]="entryForm" (ngSubmit)="onSubmit()">
     <div class="form-group">
@@ -28,6 +28,26 @@
       </div>
     </div>
 
+    <div class="form-group">
+      <label for="address">Full Address</label>
+      <textarea id="address" formControlName="address" placeholder="Enter tenant's full residential address" rows="2"></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="aadhaarNumber">Aadhaar Number</label>
+        <input type="text" id="aadhaarNumber" formControlName="aadhaarNumber" placeholder="12-digit Aadhaar number" maxlength="12" />
+        <div class="error" *ngIf="entryForm.get('aadhaarNumber')?.touched && entryForm.get('aadhaarNumber')?.hasError('pattern')">
+          Aadhaar must be exactly 12 digits
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="propertyName">Property Name/ID</label>
+        <input type="text" id="propertyName" formControlName="propertyName" placeholder="e.g. Apt 4B, Main St" />
+      </div>
+    </div>
+
     <div class="error" *ngIf="(entryForm.get('startDate')?.touched || entryForm.get('endDate')?.touched) && entryForm.hasError('startDateAfterOrEqualEndDate')">
       Start date must be earlier than end date
     </div>
@@ -37,7 +57,7 @@
 
     <div class="form-actions" mat-dialog-actions>
       <button type="button" class="cancel" (click)="onCancel()">Cancel</button>
-      <button type="submit" [disabled]="entryForm.invalid">Create</button>
+      <button type="submit" [disabled]="entryForm.invalid">{{ isEditMode ? 'Save Changes' : 'Create' }}</button>
     </div>
   </form>
 </div>

@@ -1,7 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Tenant.Api.Data;
 using Tenant.Api.Model;
+using BCrypt.Net;
 
 namespace Tenant.Api.Controllers
 {
@@ -10,10 +15,12 @@ namespace Tenant.Api.Controllers
     public class LoginController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public LoginController(AppDbContext context)
+        public LoginController(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -38,21 +45,51 @@ namespace Tenant.Api.Controllers
                     return Unauthorized(new { message = "Invalid credentials." });
                 }
 
-                // Compare plain text (DB currently stores plain text in PasswordHash column)
-                if (user.Password != request.Password)
+                // Verification with BCrypt migration
+                bool isPasswordValid = false;
+                if (user.Password == request.Password)
+                {
+                    // Plaintext match -> Migrate to BCrypt
+                    user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+                    _context.Users.Update(user);
+                    await _context.SaveChangesAsync();
+                    isPasswordValid = true;
+                }
+                else
+                {
+                    try {
+                        isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
+                    } catch { isPasswordValid = false; }
+                }
+
+                if (!isPasswordValid)
                 {
                     return Unauthorized(new { message = "Invalid credentials." });
                 }
 
-                var token = Guid.NewGuid().ToString("N");
-                user.Token = token;
-                user.TokenExpiry = DateTime.UtcNow.AddHours(24);
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
+                // Generate JWT
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Secret not found"));
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new[]
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                        new Claim(ClaimTypes.Name, user.Username),
+                        new Claim(ClaimTypes.Role, user.Role ?? "tenant")
+                    }),
+                    Expires = DateTime.UtcNow.AddDays(Convert.ToDouble(_configuration["Jwt:ExpireDays"] ?? "30")),
+                    Issuer = _configuration["Jwt:Issuer"],
+                    Audience = _configuration["Jwt:Audience"],
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+
+                var jwtToken = tokenHandler.CreateToken(tokenDescriptor);
+                var tokenString = tokenHandler.WriteToken(jwtToken);
 
                 return Ok(new LoginResponse
                 {
-                    Token = token,
+                    Token = tokenString,
                     Role = user.Role ?? "tenant",
                     Username = user.Username,
                     UserId = user.Id

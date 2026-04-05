@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using Tenant.Api.Contracts;
 using Tenant.Api.Data;
 using Tenant.Api.Models;
 using Tenant.Api.Services;
 
 namespace Tenant.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ShareController : ControllerBase
@@ -49,7 +51,24 @@ namespace Tenant.Api.Controllers
             if (entry == null)
                 return NotFound(new { message = "Dashboard data not found" });
 
-            return Ok(entry);
+            // We should return DTO to not expose internal ID
+            return Ok(new EntryDto
+            {
+                Id = entry.PublicId,
+                Name = entry.Name,
+                StartDate = entry.StartDate,
+                EndDate = entry.EndDate,
+                Records = entry.Records?.Select(r => new RecordDto
+                {
+                    Id = r.PublicId,
+                    EntryId = entry.PublicId,
+                    RentPeriod = r.RentPeriod,
+                    Amount = r.Amount,
+                    ReceivedDate = r.ReceivedDate,
+                    CreatedDate = r.CreatedDate,
+                    TenantSign = r.TenantSign
+                }).ToList() ?? new List<RecordDto>()
+            });
         }
 
         // POST: api/share/generate
@@ -60,7 +79,8 @@ namespace Tenant.Api.Controllers
             if (userId == null)
                 return Unauthorized(new { message = "Please log in to share." });
 
-            var entry = await _context.Entries.FirstOrDefaultAsync(e => e.Id == request.EntryId && e.UserId == userId);
+            // Look up by PublicId
+            var entry = await _context.Entries.FirstOrDefaultAsync(e => e.PublicId == request.EntryId && e.UserId == userId);
             if (entry == null)
                 return NotFound(new { message = "Entry not found or you do not own it." });
 
@@ -70,7 +90,7 @@ namespace Tenant.Api.Controllers
             var sharedLink = new SharedLink
             {
                 ShareToken = token,
-                EntryId = request.EntryId,
+                EntryId = entry.Id, // Internal ID stored in DB
                 CreatedDate = DateTime.UtcNow,
                 ExpiryDate = expiryDate,
                 IsActive = true
@@ -111,18 +131,18 @@ namespace Tenant.Api.Controllers
 
         // GET: api/share/links/{entryId}
         [HttpGet("links/{entryId}")]
-        public async Task<ActionResult<IEnumerable<SharedLink>>> GetShareLinksForEntry(int entryId)
+        public async Task<ActionResult<IEnumerable<SharedLink>>> GetShareLinksForEntry(Guid entryId)
         {
             var userId = await _currentUser.GetCurrentUserIdAsync();
             if (userId == null)
                 return Unauthorized();
 
-            var entry = await _context.Entries.FirstOrDefaultAsync(e => e.Id == entryId && e.UserId == userId);
+            var entry = await _context.Entries.FirstOrDefaultAsync(e => e.PublicId == entryId && e.UserId == userId);
             if (entry == null)
                 return NotFound();
 
             var links = await _context.SharedLinks
-                .Where(sl => sl.EntryId == entryId && sl.IsActive && sl.ExpiryDate > DateTime.UtcNow)
+                .Where(sl => sl.EntryId == entry.Id && sl.IsActive && sl.ExpiryDate > DateTime.UtcNow)
                 .ToListAsync();
             return Ok(links);
         }

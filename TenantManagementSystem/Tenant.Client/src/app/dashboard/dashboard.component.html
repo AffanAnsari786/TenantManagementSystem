@@ -14,11 +14,22 @@
     <div class="hero-background"></div>
     <div class="hero-content">
       <div class="welcome-badge">
-        <mat-icon>dashboard</mat-icon>
-        <span>Dashboard</span>
+        <mat-icon>home_work</mat-icon>
+        <span>{{ propertyName }}</span>
       </div>
       <h1 class="hero-title">{{ tenantName }}</h1>
-      <p class="hero-subtitle">Rental Management System</p>
+      
+      <div class="tenant-details-row">
+        <div class="detail-pill" *ngIf="aadhaarNumber !== 'Not provided'">
+          <mat-icon>badge</mat-icon>
+          <span>{{ aadhaarNumber }}</span>
+        </div>
+        <div class="detail-pill" *ngIf="address !== 'No address provided'">
+          <mat-icon>location_on</mat-icon>
+          <span>{{ address }}</span>
+        </div>
+      </div>
+
       <div class="date-pill">
         <mat-icon>calendar_today</mat-icon>
         <span>{{ formatDate(startDate) }} - {{ formatDate(endDate) }}</span>
@@ -164,6 +175,9 @@
                   <button class="action-btn edit-btn" (click)="onEditEntry(entry)" title="Edit Entry">
                     <mat-icon>edit</mat-icon>
                   </button>
+                  <button class="action-btn download-btn" (click)="downloadReceipt(entry.id)" title="Download Receipt">
+                    <mat-icon>download</mat-icon>
+                  </button>
                   <button class="action-btn delete-btn" (click)="onDeleteEntry(entry)" title="Delete Entry">
                     <mat-icon>delete</mat-icon>
                   </button>
@@ -212,6 +226,9 @@
           </button>
           <button class="action-btn edit-btn" (click)="onEditEntry(entry)">
             <mat-icon>edit</mat-icon>
+          </button>
+          <button class="action-btn download-btn" (click)="downloadReceipt(entry.id)">
+            <mat-icon>download</mat-icon>
           </button>
           <button class="action-btn delete-btn" (click)="onDeleteEntry(entry)">
             <mat-icon>delete</mat-icon>

@@ -6,6 +6,7 @@ namespace Tenant.Api.Models
     public class Record
     {
         public int Id { get; set; }
+        public Guid PublicId { get; set; } = Guid.NewGuid();
         public int EntryId { get; set; }
         [JsonIgnore]
         public Entry? Entry { get; set; }
@@ -14,5 +15,6 @@ namespace Tenant.Api.Models
         public DateTime ReceivedDate { get; set; }
         public DateTime CreatedDate { get; set; }
         public string? TenantSign { get; set; }
+        public string? ReceiptNumber { get; set; }
     }
 }

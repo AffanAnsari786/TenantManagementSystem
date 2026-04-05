@@ -6,10 +6,14 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { EntryService, Entry } from '../../services/entry.service';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { EntryService, Entry, PagedResponse } from '../../services/entry.service';
 import { isPlatformBrowser } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
+import { InitialEntryFormComponent } from '../initial-entry-form/initial-entry-form.component';
 
 @Component({
   selector: 'app-all-tenants',
@@ -21,21 +25,29 @@ import { Subscription } from 'rxjs';
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule
+    MatChipsModule,
+    MatPaginatorModule,
+    MatDialogModule,
+    MatSnackBarModule
   ],
   templateUrl: './all-tenants.component.html',
   styleUrl: './all-tenants.component.scss'
 })
 export class AllTenantsComponent implements OnInit, OnDestroy {
   entries: Entry[] = [];
-  displayedColumns: string[] = ['name', 'startDate', 'endDate', 'status', 'dashboard'];
+  displayedColumns: string[] = ['name', 'propertyName', 'startDate', 'endDate', 'status', 'dashboard'];
   loading = true;
   error: string | null = null;
+  totalRecords = 0;
+  pageSize = 10;
+  pageIndex = 0;
   private navSub?: Subscription;
 
   constructor(
     private entryService: EntryService,
     private router: Router,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -66,10 +78,11 @@ export class AllTenantsComponent implements OnInit, OnDestroy {
     this.error = null;
     this.loading = true;
     const isRetry = this.loadAttempt > 0;
-    this.entryService.getEntries().subscribe({
-      next: (list) => {
+    this.entryService.getEntries(this.pageIndex + 1, this.pageSize).subscribe({
+      next: (response) => {
         this.loadAttempt = 0;
-        this.entries = list;
+        this.entries = response.data;
+        this.totalRecords = response.totalRecords;
         this.loading = false;
       },
       error: (err) => {
@@ -111,5 +124,51 @@ export class AllTenantsComponent implements OnInit, OnDestroy {
 
   goToDashboard(entry: Entry): void {
     this.router.navigate(['/dashboard', entry.id]);
+  }
+
+  onEditTenant(entry: Entry): void {
+    const dialogRef = this.dialog.open(InitialEntryFormComponent, {
+      width: '600px',
+      disableClose: true,
+      panelClass: 'entry-form-dialog',
+      data: {
+        entry,
+        mode: 'edit'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.action === 'edit' && result.data) {
+        this.entryService.updateEntry(entry.id, result.data).subscribe({
+          next: () => {
+            this.snackBar.open('Tenant updated successfully', 'Close', { duration: 3000 });
+            this.loadEntries(); // Refresh table
+          },
+          error: () => this.snackBar.open('Failed to update tenant', 'Close', { duration: 3000 })
+        });
+      }
+    });
+  }
+
+  onDeleteTenant(entry: Entry): void {
+    if (confirm(`Are you sure you want to delete tenant ${entry.name}? This will delete all their records permanently.`)) {
+      this.entryService.deleteEntry(entry.id).subscribe({
+        next: () => {
+          this.snackBar.open('Tenant deleted successfully', 'Close', { duration: 3000 });
+          // If we deleted the last item on the page, go back one page
+          if (this.entries.length === 1 && this.pageIndex > 0) {
+            this.pageIndex--;
+          }
+          this.loadEntries();
+        },
+        error: () => this.snackBar.open('Failed to delete tenant', 'Close', { duration: 3000 })
+      });
+    }
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadEntries();
   }
 }

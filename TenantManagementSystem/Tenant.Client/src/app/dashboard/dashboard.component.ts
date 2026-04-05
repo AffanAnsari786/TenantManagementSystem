@@ -11,14 +11,18 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ShareLinkRequest, ShareService } from '../services/share.service';
 import { CreateEntryRequest, CreateRecordRequest, EntryService, UpdateRecordRequest } from '../services/entry.service';
 import { TenantDataService } from '../services/tenant-data.service';
+import { ReceiptService } from '../services/receipt.service';
 import { EntryFormComponent } from '../components/entry-form/entry-form.component';
 import { ShareModalComponent, ShareModalData } from '../components/share-modal/share-modal.component';
 
 interface Entry {
-  id: number;
+  id: string;
   name: string;
   startDate: Date;
   endDate: Date;
+  address?: string;
+  aadhaarNumber?: string;
+  propertyName?: string;
   rentPeriod: Date;
   amount: number;
   receivedDate: Date;
@@ -26,7 +30,7 @@ interface Entry {
 }
 
 interface PaymentEntry {
-  id: number;
+  id: string;
   rentPeriod: Date;
   amount: number;
   receivedDate: Date;
@@ -53,9 +57,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   tenantName: string = '';
   startDate: Date = new Date();
   endDate: Date = new Date();
+  address: string = '';
+  aadhaarNumber: string = '';
+  propertyName: string = '';
   paymentEntries: PaymentEntry[] = [];
   displayedColumns: string[] = ['rentPeriod', 'amount', 'receivedDate', 'actions'];
-  currentEntryId: number = 0;
+  currentEntryId: string = '';
   loading = true;
 
   get hasPayments(): boolean {
@@ -70,18 +77,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private entryService: EntryService,
     private tenantDataService: TenantDataService,
+    private receiptService: ReceiptService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       const entryIdParam = params.get('entryId');
-      if (entryIdParam) {
-        const id = +entryIdParam;
-        if (!isNaN(id)) {
-          this.loadEntryById(id);
+      if (entryIdParam && entryIdParam !== '0' && entryIdParam !== 'new') {
+          this.loadEntryById(entryIdParam);
           return;
-        }
       }
       this.handleNoEntryId();
     });
@@ -89,7 +94,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {}
 
-  private loadEntryById(entryId: number): void {
+  private loadEntryById(entryId: string): void {
     this.loading = true;
     this.entryService.getEntry(entryId).subscribe({
       next: (entry) => {
@@ -97,6 +102,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.tenantName = entry.name;
         this.startDate = new Date(entry.startDate);
         this.endDate = new Date(entry.endDate);
+        this.address = entry.address || 'No address provided';
+        this.aadhaarNumber = entry.aadhaarNumber || 'Not provided';
+        this.propertyName = entry.propertyName || 'Unassigned Property';
         this.paymentEntries = (entry.records || []).map(r => ({
           id: r.id,
           rentPeriod: new Date(r.rentPeriod),
@@ -134,7 +142,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const createRequest: CreateEntryRequest = {
         name: newEntryData.name,
         startDate: new Date(newEntryData.startDate).toISOString(),
-        endDate: new Date(newEntryData.endDate).toISOString()
+        endDate: new Date(newEntryData.endDate).toISOString(),
+        address: newEntryData.address,
+        aadhaarNumber: newEntryData.aadhaarNumber,
+        propertyName: newEntryData.propertyName
       };
       this.entryService.createEntry(createRequest).subscribe({
         next: (entry) => {
@@ -153,7 +164,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onAddPayment() {
     // If no entry exists, create one first
-    if (!this.currentEntryId || this.currentEntryId === 0) {
+    if (!this.currentEntryId || this.currentEntryId === '') {
       this.createDefaultEntryAndAddPayment();
       return;
     }
@@ -299,9 +310,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  private generateId(): number {
-    return Math.max(0, ...this.paymentEntries.map(e => e.id)) + 1;
-  }
+  // generateId not needed
+
 
   onShareDashboard(): void {
     if (!this.hasPayments) {
@@ -379,5 +389,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const entryDate = new Date(entry.receivedDate);
       return entryDate.getMonth() === currentMonth && entryDate.getFullYear() === currentYear;
     }).length;
+  }
+
+  downloadReceipt(recordId: string) {
+    this.receiptService.downloadReceipt(recordId).subscribe({
+      next: (blob: any) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const tenantNameSanitized = this.tenantName.replace(/[^a-zA-Z0-9]/g, '_');
+        const monthYear = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).replace(' ', '');
+        a.download = `Receipt_${monthYear}_${tenantNameSanitized}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error: any) => {
+        console.error('Error downloading receipt:', error);
+        this.snackBar.open('Failed to download receipt', 'Close', { duration: 3000 });
+      }
+    });
   }
 } 
