@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
@@ -24,6 +24,7 @@ export class LoginComponent {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService
   ) {}
 
@@ -40,7 +41,8 @@ export class LoginComponent {
     this.loading = true;
     this.authService.login(this.username, this.password).subscribe({
       next: () => {
-        this.router.navigate(['/home']);
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
+        this.router.navigateByUrl(returnUrl);
       },
       error: (err) => {
         this.loading = false;

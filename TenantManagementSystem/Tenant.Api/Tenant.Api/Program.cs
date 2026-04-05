@@ -3,10 +3,34 @@ using Tenant.Api.Data;
 using Tenant.Api.Hubs;
 using Tenant.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
+
+if (string.IsNullOrWhiteSpace(jwtKey) ||
+    string.IsNullOrWhiteSpace(jwtIssuer) ||
+    string.IsNullOrWhiteSpace(jwtAudience))
+{
+    throw new InvalidOperationException(
+        "JWT configuration is missing. Set Jwt:Key, Jwt:Issuer and Jwt:Audience " +
+        "via appsettings.Development.json (dev only), user-secrets, or environment " +
+        "variables (e.g. Jwt__Key, Jwt__Issuer, Jwt__Audience).");
+}
+
+if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
+{
+    throw new InvalidOperationException(
+        "Jwt:Key must be at least 32 bytes (256 bits) for HMAC-SHA256. " +
+        "Generate one with e.g. `openssl rand -base64 48`.");
+}
 
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
@@ -16,13 +40,16 @@ builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//builder.Services.AddControllers()
-//    .AddJsonOptions(options =>
-//        options.JsonSerializerOptions.ReferenceHandler =
-//            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
-
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
+
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = ctx =>
+    {
+        ctx.ProblemDetails.Extensions["traceId"] = ctx.HttpContext.TraceIdentifier;
+    };
+});
 
 // JWT Authentication Setup
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -34,9 +61,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "default_secret_key_which_must_be_long_enough"))
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
         options.Events = new JwtBearerEvents
         {
@@ -71,20 +98,41 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var feature = context.Features.Get<IExceptionHandlerFeature>();
+        var logger = context.RequestServices.GetRequiredService<ILoggerFactory>()
+            .CreateLogger("GlobalExceptionHandler");
+
+        if (feature?.Error is not null)
+        {
+            logger.LogError(feature.Error, "Unhandled exception on {Path}", context.Request.Path);
+        }
+
+        var problem = new ProblemDetails
+        {
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+            Title = "An unexpected error occurred.",
+            Status = StatusCodes.Status500InternalServerError,
+            Instance = context.Request.Path
+        };
+        problem.Extensions["traceId"] = context.TraceIdentifier;
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/problem+json";
+        await context.Response.WriteAsJsonAsync(problem);
+    });
+});
+
+app.UseStatusCodePages();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    
-    // Add development CORS logging
-    app.Use(async (context, next) =>
-    {
-        Console.WriteLine($"Request: {context.Request.Method} {context.Request.Path}");
-        Console.WriteLine($"Origin: {context.Request.Headers.Origin}");
-        await next();
-        Console.WriteLine($"Response: {context.Response.StatusCode}");
-    });
 }
 
 if (!app.Environment.IsDevelopment())

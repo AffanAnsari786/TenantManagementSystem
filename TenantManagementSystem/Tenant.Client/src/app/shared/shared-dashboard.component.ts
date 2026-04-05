@@ -168,7 +168,7 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
             this.signalRService.onEntryUpdated(() => {
               this.loadSharedDashboard(this.shareToken);
             });
-            this.signalRService.joinEntry(entryId);
+            this.signalRService.joinEntry(entryId, this.shareToken);
           }).catch((err) => {
             console.warn('SignalR connect failed:', err);
             this.signalRJoined = false;

@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../core/tokens/api-tokens';
 
 export interface ShareLinkRequest {
   entryId: string;
@@ -32,9 +33,14 @@ export interface SharedEntry {
   providedIn: 'root'
 })
 export class ShareService {
-  private apiUrl = 'http://localhost:5149/api/share'; // Using HTTP instead of HTTPS for development
+  private readonly apiUrl: string;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    @Inject(API_BASE_URL) apiBaseUrl: string
+  ) {
+    this.apiUrl = `${apiBaseUrl}/share`;
+  }
 
   generateShareLink(request: ShareLinkRequest): Observable<ShareLinkResponse> {
     return this.http.post<ShareLinkResponse>(`${this.apiUrl}/generate`, request);

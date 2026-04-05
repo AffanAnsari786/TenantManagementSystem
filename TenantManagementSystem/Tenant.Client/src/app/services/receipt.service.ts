@@ -1,14 +1,20 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../core/tokens/api-tokens';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReceiptService {
-  private apiUrl = 'http://localhost:5149/api/receipts';
+  private readonly apiUrl: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    @Inject(API_BASE_URL) apiBaseUrl: string
+  ) {
+    this.apiUrl = `${apiBaseUrl}/receipts`;
+  }
 
   downloadReceipt(recordId: string | number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${recordId}`, {

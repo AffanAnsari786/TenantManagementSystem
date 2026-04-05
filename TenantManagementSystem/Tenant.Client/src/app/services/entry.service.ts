@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../core/tokens/api-tokens';
 
 export interface EntryRecord {
   id: string;
@@ -55,9 +56,14 @@ export interface UpdateRecordRequest {
   providedIn: 'root'
 })
 export class EntryService {
-  private apiUrl = 'http://localhost:5149/api/entries'; // Using HTTP instead of HTTPS for development
+  private readonly apiUrl: string;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    @Inject(API_BASE_URL) apiBaseUrl: string
+  ) {
+    this.apiUrl = `${apiBaseUrl}/entries`;
+  }
 
   getEntries(page: number = 1, pageSize: number = 10): Observable<PagedResponse<Entry>> {
     return this.http.get<PagedResponse<Entry>>(`${this.apiUrl}?page=${page}&pageSize=${pageSize}`);

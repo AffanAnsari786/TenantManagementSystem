@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using Tenant.Api.Services;
@@ -11,10 +12,12 @@ namespace Tenant.Api.Controllers
     public class ReceiptsController : ControllerBase
     {
         private readonly IReceiptService _receiptService;
+        private readonly ILogger<ReceiptsController> _logger;
 
-        public ReceiptsController(IReceiptService receiptService)
+        public ReceiptsController(IReceiptService receiptService, ILogger<ReceiptsController> logger)
         {
             _receiptService = receiptService;
+            _logger = logger;
         }
 
         [HttpGet("{recordId}")]
@@ -25,7 +28,6 @@ namespace Tenant.Api.Controllers
             {
                 var (pdfBytes, fileName) = await _receiptService.GenerateReceiptAsync(recordId);
                 return File(pdfBytes, "application/pdf", fileName);
-                //return Forbid();
             }
             catch (UnauthorizedAccessException)
             {
@@ -33,7 +35,11 @@ namespace Tenant.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                _logger.LogError(ex, "Failed to generate receipt for record {RecordId}", recordId);
+                return Problem(
+                    title: "Could not generate receipt.",
+                    detail: "The receipt could not be generated. Please try again later.",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -41,13 +47,16 @@ namespace Tenant.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> DownloadSharedReceipt(Guid recordId, [FromQuery] string publicId)
         {
+            if (string.IsNullOrEmpty(publicId))
+            {
+                return Problem(
+                    title: "Missing public access id.",
+                    detail: "Public access ID is required.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
             try
             {
-                if (string.IsNullOrEmpty(publicId))
-                {
-                    return BadRequest(new { Message = "Public access ID is required" });
-                }
-
                 var (pdfBytes, fileName) = await _receiptService.GenerateReceiptAsync(recordId, publicId);
                 return File(pdfBytes, "application/pdf", fileName);
             }
@@ -57,7 +66,11 @@ namespace Tenant.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                _logger.LogError(ex, "Failed to generate shared receipt for record {RecordId}", recordId);
+                return Problem(
+                    title: "Could not generate receipt.",
+                    detail: "The receipt could not be generated. Please try again later.",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
     }

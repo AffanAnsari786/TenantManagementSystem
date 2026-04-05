@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,11 +17,13 @@ namespace Tenant.Api.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<LoginController> _logger;
 
-        public LoginController(AppDbContext context, IConfiguration configuration)
+        public LoginController(AppDbContext context, IConfiguration configuration, ILogger<LoginController> logger)
         {
             _context = context;
             _configuration = configuration;
+            _logger = logger;
         }
 
         /// <summary>
@@ -97,12 +100,11 @@ namespace Tenant.Api.Controllers
             }
             catch (Exception ex)
             {
-                // Return JSON so the client never sees raw exception text; log the real error
-                return StatusCode(500, new
-                {
-                    message = "A server error occurred while signing in. Check that the database is running and the connection string is correct.",
-                    detail = ex.Message
-                });
+                _logger.LogError(ex, "Error during login for username {Username}", request?.Username);
+                return Problem(
+                    title: "Sign-in failed.",
+                    detail: "An unexpected error occurred while signing in. Please try again later.",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
     }

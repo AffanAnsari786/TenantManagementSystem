@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
+import { HUB_BASE_URL } from '../core/tokens/api-tokens';
+import { AuthService } from './auth.service';
 
 export const ENTRY_UPDATED_METHOD = 'EntryUpdated';
 
@@ -21,10 +23,19 @@ const CONNECTING = 1;
   providedIn: 'root'
 })
 export class SignalRService {
-  private hubUrl = 'http://localhost:5149/hubs/shared-dashboard';
+  private readonly hubUrl: string;
   private connection: IHubConnection | null = null;
   /** Re-join this entry after automatic reconnect (groups are per-connection). */
   private lastJoinedEntryId: string | null = null;
+  /** Optional share token used for anonymous viewers; replayed on reconnect. */
+  private lastShareToken: string | null = null;
+
+  constructor(
+    @Inject(HUB_BASE_URL) hubBaseUrl: string,
+    private auth: AuthService
+  ) {
+    this.hubUrl = `${hubBaseUrl}/shared-dashboard`;
+  }
 
   async connect(): Promise<void> {
     if (this.connection?.state === CONNECTED) {
@@ -36,14 +47,20 @@ export class SignalRService {
 
     const signalR = await import('@microsoft/signalr');
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl(this.hubUrl)
+      .withUrl(this.hubUrl, {
+        // Pass the JWT when available so authenticated owners are recognised
+        // by the hub. Anonymous viewers will simply connect without a token.
+        accessTokenFactory: () => this.auth.getToken() ?? ''
+      })
       .withAutomaticReconnect()
       .build() as unknown as IHubConnection;
 
     const conn = this.connection as unknown as { onreconnected?(cb: (id?: string) => void): void };
     conn.onreconnected?.(() => {
       if (this.lastJoinedEntryId != null && this.connection) {
-        this.connection.invoke('JoinEntry', this.lastJoinedEntryId).catch(() => {});
+        this.connection
+          .invoke('JoinEntry', this.lastJoinedEntryId, this.lastShareToken)
+          .catch(() => {});
       }
     });
 
@@ -55,16 +72,22 @@ export class SignalRService {
       await this.connection.stop();
       this.connection = null;
       this.lastJoinedEntryId = null;
+      this.lastShareToken = null;
     }
   }
 
-  async joinEntry(entryId: string): Promise<void> {
+  /**
+   * Join the realtime group for an Entry.
+   * Pass a `shareToken` when the caller is an anonymous viewer of a SharedLink.
+   */
+  async joinEntry(entryId: string, shareToken?: string | null): Promise<void> {
     if (!this.connection || this.connection.state !== CONNECTED) {
       await this.connect();
     }
     if (this.connection) {
       this.lastJoinedEntryId = entryId;
-      await this.connection.invoke('JoinEntry', entryId);
+      this.lastShareToken = shareToken ?? null;
+      await this.connection.invoke('JoinEntry', entryId, this.lastShareToken);
     }
   }
 

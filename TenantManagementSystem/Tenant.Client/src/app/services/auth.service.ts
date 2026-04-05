@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { API_BASE_URL } from '../core/tokens/api-tokens';
 
 export interface LoginRequest {
   username: string;
@@ -18,9 +19,14 @@ export interface LoginResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:5149/api/login';
+  private readonly apiUrl: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    @Inject(API_BASE_URL) apiBaseUrl: string
+  ) {
+    this.apiUrl = `${apiBaseUrl}/login`;
+  }
 
   login(username: string, password: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(this.apiUrl, {
