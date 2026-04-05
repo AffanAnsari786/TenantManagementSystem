@@ -392,16 +392,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   downloadReceipt(recordId: string) {
+    if (!isPlatformBrowser(this.platformId)) return;
     this.receiptService.downloadReceipt(recordId).subscribe({
-      next: (blob: any) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
+      next: (blob: Blob) => {
+        const pdfBlob = blob.type ? blob : new Blob([blob], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(pdfBlob);
         const tenantNameSanitized = this.tenantName.replace(/[^a-zA-Z0-9]/g, '_');
         const monthYear = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).replace(' ', '');
-        a.download = `Receipt_${monthYear}_${tenantNameSanitized}.pdf`;
+        const fileName = `Receipt_${monthYear}_${tenantNameSanitized}.pdf`;
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.style.display = 'none';
+        document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        setTimeout(() => window.URL.revokeObjectURL(url), 1000);
       },
       error: (error: any) => {
         console.error('Error downloading receipt:', error);

@@ -214,11 +214,11 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
     // Wait, `ReceiptsController` expects `publicId`. In `SharedEntry` we have `id` which is the Entry's PublicId (since Entry Service maps PublicId to `id`).
     // Let's pass `this.dashboardData.id`. 
     
+    if (!isPlatformBrowser(this.platformId)) return;
     this.receiptService.downloadSharedReceipt(recordId, this.dashboardData.id).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
+      next: (blob: Blob) => {
+        const pdfBlob = blob.type ? blob : new Blob([blob], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(pdfBlob);
         const tenantNameSanitized = this.dashboardData!.name.replace(/[^a-zA-Z0-9]/g, '_');
         const record = this.paymentRecords.find(r => r.id === recordId);
         let monthYear = '';
@@ -227,10 +227,16 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
         } else {
             monthYear = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).replace(' ', '');
         }
-        
-        a.download = `Receipt_${monthYear}_${tenantNameSanitized}.pdf`;
+        const fileName = `Receipt_${monthYear}_${tenantNameSanitized}.pdf`;
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.style.display = 'none';
+        document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        setTimeout(() => window.URL.revokeObjectURL(url), 1000);
       },
       error: (error) => {
         console.error('Error downloading shared receipt:', error);
