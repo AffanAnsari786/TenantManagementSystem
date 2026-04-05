@@ -1,35 +1,38 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Tenant.Api.Data;
-using Tenant.Api.Model;
-using BCrypt.Net;
+using Tenant.Api.Common;
+using Tenant.Api.Services;
 
 namespace Tenant.Api.Controllers
 {
+    /// <summary>
+    /// Authentication endpoints. Route is kept at /api/login to preserve the
+    /// existing client contract. Access tokens are short-lived (15 min) and
+    /// returned in the response body; refresh tokens are long-lived and
+    /// delivered to the browser as an HttpOnly, Secure, SameSite cookie so
+    /// JavaScript (and any XSS) can never read them.
+    /// </summary>
+    [ApiVersion("1.0")]
+    [EnableRateLimiting(RateLimitPolicies.Login)]
     [Route("api/[controller]")]
     [ApiController]
     public class LoginController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly IConfiguration _configuration;
-        private readonly ILogger<LoginController> _logger;
+        private const string RefreshCookieName = "tms_rt";
 
-        public LoginController(AppDbContext context, IConfiguration configuration, ILogger<LoginController> logger)
+        private readonly IAuthService _authService;
+        private readonly ILogger<LoginController> _logger;
+        private readonly IWebHostEnvironment _env;
+
+        public LoginController(IAuthService authService, ILogger<LoginController> logger, IWebHostEnvironment env)
         {
-            _context = context;
-            _configuration = configuration;
+            _authService = authService;
             _logger = logger;
+            _env = env;
         }
 
-        /// <summary>
-        /// POST api/login - validates username and password against Users table.
-        /// PasswordHash column is compared as plain text (for dev); use proper hashing in production.
-        /// </summary>
         [HttpPost]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
         {
@@ -38,74 +41,85 @@ namespace Tenant.Api.Controllers
                 return BadRequest(new { message = "Username and password are required." });
             }
 
-            try
+            var tokens = await _authService.LoginAsync(request.Username, request.Password);
+            if (tokens == null)
             {
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Username == request.Username.Trim());
-
-                if (user == null)
-                {
-                    return Unauthorized(new { message = "Invalid credentials." });
-                }
-
-                // Verification with BCrypt migration
-                bool isPasswordValid = false;
-                if (user.Password == request.Password)
-                {
-                    // Plaintext match -> Migrate to BCrypt
-                    user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
-                    _context.Users.Update(user);
-                    await _context.SaveChangesAsync();
-                    isPasswordValid = true;
-                }
-                else
-                {
-                    try {
-                        isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
-                    } catch { isPasswordValid = false; }
-                }
-
-                if (!isPasswordValid)
-                {
-                    return Unauthorized(new { message = "Invalid credentials." });
-                }
-
-                // Generate JWT
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Secret not found"));
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(new[]
-                    {
-                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                        new Claim(ClaimTypes.Name, user.Username),
-                        new Claim(ClaimTypes.Role, user.Role ?? "tenant")
-                    }),
-                    Expires = DateTime.UtcNow.AddDays(Convert.ToDouble(_configuration["Jwt:ExpireDays"] ?? "30")),
-                    Issuer = _configuration["Jwt:Issuer"],
-                    Audience = _configuration["Jwt:Audience"],
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                };
-
-                var jwtToken = tokenHandler.CreateToken(tokenDescriptor);
-                var tokenString = tokenHandler.WriteToken(jwtToken);
-
-                return Ok(new LoginResponse
-                {
-                    Token = tokenString,
-                    Role = user.Role ?? "tenant",
-                    Username = user.Username,
-                    UserId = user.Id
-                });
+                return Unauthorized(new { message = "Invalid credentials." });
             }
-            catch (Exception ex)
+
+            AppendRefreshCookie(tokens.RefreshToken, tokens.RefreshTokenExpiresAt);
+            return Ok(new LoginResponse
             {
-                _logger.LogError(ex, "Error during login for username {Username}", request?.Username);
-                return Problem(
-                    title: "Sign-in failed.",
-                    detail: "An unexpected error occurred while signing in. Please try again later.",
-                    statusCode: StatusCodes.Status500InternalServerError);
+                Token = tokens.AccessToken,
+                ExpiresAt = tokens.AccessTokenExpiresAt,
+                Role = tokens.Role,
+                Username = tokens.Username,
+                UserId = tokens.UserId
+            });
+        }
+
+        [HttpPost("refresh")]
+        public async Task<ActionResult<LoginResponse>> Refresh()
+        {
+            if (!Request.Cookies.TryGetValue(RefreshCookieName, out var raw) || string.IsNullOrWhiteSpace(raw))
+            {
+                return Unauthorized(new { message = "Session expired." });
             }
+
+            var tokens = await _authService.RefreshAsync(raw);
+            if (tokens == null)
+            {
+                // Clear the stale cookie so the client stops retrying.
+                ClearRefreshCookie();
+                return Unauthorized(new { message = "Session expired." });
+            }
+
+            AppendRefreshCookie(tokens.RefreshToken, tokens.RefreshTokenExpiresAt);
+            return Ok(new LoginResponse
+            {
+                Token = tokens.AccessToken,
+                ExpiresAt = tokens.AccessTokenExpiresAt,
+                Role = tokens.Role,
+                Username = tokens.Username,
+                UserId = tokens.UserId
+            });
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            if (Request.Cookies.TryGetValue(RefreshCookieName, out var raw))
+            {
+                await _authService.LogoutAsync(raw);
+            }
+            ClearRefreshCookie();
+            return Ok(new { message = "Logged out." });
+        }
+
+        private void AppendRefreshCookie(string rawRefreshToken, DateTime expiresAt)
+        {
+            Response.Cookies.Append(RefreshCookieName, rawRefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                // In dev we serve over HTTP from localhost — CORS AllowCredentials
+                // requires Secure to be set per spec when SameSite=None, but we
+                // use SameSite=Lax in dev (same-site-ish with localhost ports).
+                Secure = !_env.IsDevelopment(),
+                SameSite = _env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.Strict,
+                Expires = expiresAt,
+                Path = "/api/login"
+            });
+        }
+
+        private void ClearRefreshCookie()
+        {
+            Response.Cookies.Delete(RefreshCookieName, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = !_env.IsDevelopment(),
+                SameSite = _env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.Strict,
+                Path = "/api/login"
+            });
         }
     }
 
@@ -118,6 +132,7 @@ namespace Tenant.Api.Controllers
     public class LoginResponse
     {
         public string Token { get; set; } = string.Empty;
+        public DateTime ExpiresAt { get; set; }
         public string Role { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public int UserId { get; set; }

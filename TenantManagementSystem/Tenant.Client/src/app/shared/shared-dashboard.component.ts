@@ -33,9 +33,15 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
 
   private shareToken: string = '';
   private signalRJoined = false;
-  /** Polling fallback so shared view updates even if SignalR fails (e.g. CORS, port). */
+  /**
+   * Polling fallback — only runs when SignalR is NOT in Connected state.
+   * When SignalR is healthy, the hub pushes updates and polling stays idle,
+   * avoiding duplicated traffic.
+   */
   private pollIntervalId: ReturnType<typeof setInterval> | null = null;
   private readonly POLL_INTERVAL_MS = 5000;
+  /** HubConnectionState.Connected = 2 */
+  private readonly SIGNALR_CONNECTED = 2;
 
   get hasPayments(): boolean {
     return this.paymentRecords.length > 0;
@@ -154,10 +160,14 @@ export class SharedDashboardComponent implements OnInit, OnDestroy {
         this.updateDashboardData(this.normalizeSharedEntry(data));
         this.loading = false;
 
-        // Start polling so shared view auto-refreshes even when SignalR doesn't connect
+        // Start the polling timer, but each tick first checks whether
+        // SignalR is live. If so, the tick is a no-op — SignalR carries the
+        // updates. We only hit the network via polling when the hub is down.
         if (!this.pollIntervalId && this.shareToken) {
           this.pollIntervalId = setInterval(() => {
-            if (this.shareToken) this.loadSharedDashboard(this.shareToken);
+            if (!this.shareToken) return;
+            if (this.signalRService.getState() === this.SIGNALR_CONNECTED) return;
+            this.loadSharedDashboard(this.shareToken);
           }, this.POLL_INTERVAL_MS);
         }
 

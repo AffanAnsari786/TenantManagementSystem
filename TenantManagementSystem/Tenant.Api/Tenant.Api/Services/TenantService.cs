@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Tenant.Api.Common;
 using Tenant.Api.Contracts;
 using Tenant.Api.Data;
 using Tenant.Api.Models;
@@ -8,18 +9,12 @@ namespace Tenant.Api.Services;
 public class TenantService : ITenantService
 {
     private readonly AppDbContext _context;
+    private readonly IShareService _shareService;
 
-    public TenantService(AppDbContext context)
+    public TenantService(AppDbContext context, IShareService shareService)
     {
         _context = context;
-    }
-
-    private static string? MaskAadhaar(string? aadhaar)
-    {
-        if (string.IsNullOrWhiteSpace(aadhaar)) return null;
-        var clean = aadhaar.Replace(" ", "").Replace("-", "");
-        if (clean.Length != 12) return aadhaar;
-        return $"{clean.Substring(0, 2)}** **** **{clean.Substring(10, 2)}";
+        _shareService = shareService;
     }
 
     private static EntryDto MapToDto(Entry entry)
@@ -31,7 +26,7 @@ public class TenantService : ITenantService
             StartDate = entry.StartDate,
             EndDate = entry.EndDate,
             Address = entry.Address,
-            AadhaarNumber = MaskAadhaar(entry.AadhaarNumber),
+            AadhaarNumber = PiiMasking.MaskAadhaar(entry.AadhaarNumber),
             PropertyName = entry.PropertyName,
             Records = entry.Records?.Select(MapToDto).ToList() ?? new List<RecordDto>()
         };
@@ -93,7 +88,7 @@ public class TenantService : ITenantService
             StartDate = request.StartDate!.Value,
             EndDate = request.EndDate!.Value,
             Address = request.Address?.Trim(),
-            AadhaarNumber = request.AadhaarNumber?.Replace(" ", "").Replace("-", ""),
+            AadhaarNumber = PiiMasking.NormaliseAadhaar(request.AadhaarNumber),
             PropertyName = request.PropertyName?.Trim(),
             UserId = userId
         };
@@ -115,7 +110,7 @@ public class TenantService : ITenantService
         entry.StartDate = request.StartDate!.Value;
         entry.EndDate = request.EndDate!.Value;
         entry.Address = request.Address?.Trim();
-        entry.AadhaarNumber = request.AadhaarNumber?.Replace(" ", "").Replace("-", "");
+        entry.AadhaarNumber = PiiMasking.NormaliseAadhaar(request.AadhaarNumber);
         entry.PropertyName = request.PropertyName?.Trim();
 
         await _context.SaveChangesAsync();
@@ -152,6 +147,7 @@ public class TenantService : ITenantService
 
         _context.Records.Add(record);
         await _context.SaveChangesAsync();
+        _shareService.InvalidateEntry(entry.PublicId);
         return MapToDto(record);
     }
 
@@ -170,6 +166,7 @@ public class TenantService : ITenantService
         record.ReceivedDate = request.ReceivedDate!.Value;
 
         await _context.SaveChangesAsync();
+        _shareService.InvalidateEntry(entry.PublicId);
         return MapToDto(record);
     }
 
@@ -183,6 +180,7 @@ public class TenantService : ITenantService
 
         _context.Records.Remove(record);
         await _context.SaveChangesAsync();
+        _shareService.InvalidateEntry(entry.PublicId);
         return true;
     }
 
@@ -198,6 +196,7 @@ public class TenantService : ITenantService
 
         record.TenantSign = request.TenantSign;
         await _context.SaveChangesAsync();
+        _shareService.InvalidateEntry(entry.PublicId);
         return MapToDto(record);
     }
 }

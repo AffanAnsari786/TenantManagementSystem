@@ -9,32 +9,34 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ShareLinkRequest, ShareService } from '../services/share.service';
-import { CreateEntryRequest, CreateRecordRequest, EntryService, UpdateRecordRequest } from '../services/entry.service';
+import { CreateEntryRequest, CreateRecordRequest, Entry, EntryRecord, EntryService, UpdateRecordRequest } from '../services/entry.service';
 import { TenantDataService } from '../services/tenant-data.service';
 import { ReceiptService } from '../services/receipt.service';
+import { SignalRService } from '../services/signalr.service';
 import { EntryFormComponent } from '../components/entry-form/entry-form.component';
 import { ShareModalComponent, ShareModalData } from '../components/share-modal/share-modal.component';
 
-interface Entry {
-  id: string;
-  name: string;
-  startDate: Date;
-  endDate: Date;
-  address?: string;
-  aadhaarNumber?: string;
-  propertyName?: string;
-  rentPeriod: Date;
-  amount: number;
-  receivedDate: Date;
-  createdDate: Date;
-}
-
+/**
+ * UI-local projection of EntryRecord with dates already parsed — the shared
+ * Entry type in entry.service.ts uses ISO strings (wire format), so the view
+ * layer converts once on load and keeps strongly-typed Date values after that.
+ */
 interface PaymentEntry {
   id: string;
   rentPeriod: Date;
   amount: number;
   receivedDate: Date;
   createdDate: Date;
+}
+
+function toPaymentEntry(r: EntryRecord): PaymentEntry {
+  return {
+    id: r.id,
+    rentPeriod: new Date(r.rentPeriod),
+    amount: r.amount,
+    receivedDate: new Date(r.receivedDate),
+    createdDate: new Date(r.createdDate)
+  };
 }
 
 @Component({
@@ -69,6 +71,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.paymentEntries.length > 0;
   }
 
+  private signalRJoinedEntryId: string | null = null;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -78,6 +82,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private entryService: EntryService,
     private tenantDataService: TenantDataService,
     private receiptService: ReceiptService,
+    private signalRService: SignalRService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -92,27 +97,50 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy() {
+    this.signalRService.offEntryUpdated();
+    this.signalRService.disconnect();
+  }
 
-  private loadEntryById(entryId: string): void {
-    this.loading = true;
+  /**
+   * Owner-side live sync: after loading an entry, join its SignalR group so
+   * that edits made in another tab/device push a silent refresh here.
+   */
+  private ensureSignalRSubscribed(entryId: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.signalRJoinedEntryId === entryId) return;
+
+    this.signalRJoinedEntryId = entryId;
+    this.signalRService.connect().then(() => {
+      this.signalRService.onEntryUpdated(() => {
+        // Silent reload — no spinner flicker.
+        this.loadEntryById(entryId, true);
+      });
+      return this.signalRService.joinEntry(entryId);
+    }).catch(err => {
+      console.warn('SignalR connect failed on owner dashboard:', err);
+      this.signalRJoinedEntryId = null;
+    });
+  }
+
+  private applyEntry(entry: Entry): void {
+    this.currentEntryId = entry.id;
+    this.tenantName = entry.name;
+    this.startDate = new Date(entry.startDate);
+    this.endDate = new Date(entry.endDate);
+    this.address = entry.address || 'No address provided';
+    this.aadhaarNumber = entry.aadhaarNumber || 'Not provided';
+    this.propertyName = entry.propertyName || 'Unassigned Property';
+    this.paymentEntries = (entry.records || []).map(toPaymentEntry);
+  }
+
+  private loadEntryById(entryId: string, silent: boolean = false): void {
+    if (!silent) this.loading = true;
     this.entryService.getEntry(entryId).subscribe({
-      next: (entry) => {
-        this.currentEntryId = entry.id;
-        this.tenantName = entry.name;
-        this.startDate = new Date(entry.startDate);
-        this.endDate = new Date(entry.endDate);
-        this.address = entry.address || 'No address provided';
-        this.aadhaarNumber = entry.aadhaarNumber || 'Not provided';
-        this.propertyName = entry.propertyName || 'Unassigned Property';
-        this.paymentEntries = (entry.records || []).map(r => ({
-          id: r.id,
-          rentPeriod: new Date(r.rentPeriod),
-          amount: r.amount,
-          receivedDate: new Date(r.receivedDate),
-          createdDate: new Date(r.createdDate)
-        }));
+      next: (entry: Entry) => {
+        this.applyEntry(entry);
         this.loading = false;
+        this.ensureSignalRSubscribed(entry.id);
       },
       error: (err) => {
         this.loading = false;
@@ -219,14 +247,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.entryService.addRecord(this.currentEntryId, recordRequest).subscribe({
       next: (record) => {
-        const newPayment = {
-          id: record.id,
-          rentPeriod: new Date(record.rentPeriod),
-          amount: record.amount,
-          receivedDate: new Date(record.receivedDate),
-          createdDate: new Date(record.createdDate)
-        };
-        this.paymentEntries = [newPayment, ...this.paymentEntries];
+        this.paymentEntries = [toPaymentEntry(record), ...this.paymentEntries];
       },
       error: (error) => {
         console.error('Error adding payment record:', error);
@@ -265,15 +286,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         this.entryService.updateRecord(this.currentEntryId, entry.id, updateRequest).subscribe({
           next: (updatedRecord) => {
-            // Update the local array with API response
-            const updatedEntry = {
-              id: updatedRecord.id,
-              rentPeriod: new Date(updatedRecord.rentPeriod),
-              amount: updatedRecord.amount,
-              receivedDate: new Date(updatedRecord.receivedDate),
-              createdDate: entry.createdDate // Keep original created date
+            const updatedEntry: PaymentEntry = {
+              ...toPaymentEntry(updatedRecord),
+              createdDate: entry.createdDate // keep original created date
             };
-            
+
             const index = this.paymentEntries.findIndex(e => e.id === entry.id);
             if (index !== -1) {
               this.paymentEntries = [

@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -10,6 +11,7 @@ using Tenant.Api.Services;
 
 namespace Tenant.Api.Controllers
 {
+    [ApiVersion("1.0")]
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
@@ -18,12 +20,18 @@ namespace Tenant.Api.Controllers
         private readonly ITenantService _tenantService;
         private readonly ICurrentUserService _currentUser;
         private readonly IHubContext<SharedDashboardHub> _hubContext;
+        private readonly IReceiptJobQueue _receiptJobQueue;
 
-        public EntriesController(ITenantService tenantService, ICurrentUserService currentUser, IHubContext<SharedDashboardHub> hubContext)
+        public EntriesController(
+            ITenantService tenantService,
+            ICurrentUserService currentUser,
+            IHubContext<SharedDashboardHub> hubContext,
+            IReceiptJobQueue receiptJobQueue)
         {
             _tenantService = tenantService;
             _currentUser = currentUser;
             _hubContext = hubContext;
+            _receiptJobQueue = receiptJobQueue;
         }
 
         // GET: api/entries - returns paginated entries belonging to the logged-in user.
@@ -101,6 +109,7 @@ namespace Tenant.Api.Controllers
             if (record == null) return NotFound();
 
             await _hubContext.Clients.Group($"Entry_{entryId}").SendAsync(SharedDashboardHub.EntryUpdatedMethod, entryId);
+            _receiptJobQueue.Enqueue(record.Id);
             return Ok(record);
         }
 
@@ -115,6 +124,7 @@ namespace Tenant.Api.Controllers
             if (record == null) return NotFound();
 
             await _hubContext.Clients.Group($"Entry_{entryId}").SendAsync(SharedDashboardHub.EntryUpdatedMethod, entryId);
+            _receiptJobQueue.Enqueue(record.Id);
             return Ok(record);
         }
 
@@ -143,6 +153,7 @@ namespace Tenant.Api.Controllers
             if (record == null) return NotFound();
 
             await _hubContext.Clients.Group($"Entry_{entryId}").SendAsync(SharedDashboardHub.EntryUpdatedMethod, entryId);
+            _receiptJobQueue.Enqueue(record.Id);
             return Ok(record);
         }
     }
