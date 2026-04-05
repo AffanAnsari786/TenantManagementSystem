@@ -27,9 +27,9 @@
               <mat-icon>home</mat-icon>
               <span>Home</span>
             </a>
-            <a routerLink="/dashboard" class="nav-link" routerLinkActive="active">
-              <mat-icon>dashboard</mat-icon>
-              <span>Dashboard</span>
+            <a routerLink="/all-tenants" class="nav-link" routerLinkActive="active">
+              <mat-icon>people</mat-icon>
+              <span>All Tenants</span>
             </a>
           </nav>
 
@@ -75,13 +75,13 @@
               </div>
             </a>
             
-            <a routerLink="/dashboard" class="sidebar-nav-item" (click)="closeSidebar()" routerLinkActive="active">
+            <a routerLink="/all-tenants" class="sidebar-nav-item" (click)="closeSidebar()" routerLinkActive="active">
               <div class="nav-item-icon">
-                <mat-icon>dashboard</mat-icon>
+                <mat-icon>people</mat-icon>
               </div>
               <div class="nav-item-content">
-                <span class="nav-item-title">Dashboard</span>
-                <span class="nav-item-desc">Manage payments</span>
+                <span class="nav-item-title">All Tenants</span>
+                <span class="nav-item-desc">View all tenants</span>
               </div>
             </a>
             
@@ -102,6 +102,39 @@
       <main class="main-content">
         <router-outlet></router-outlet>
       </main>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <div class="footer-inner">
+          <div class="footer-grid">
+            <div class="footer-brand">
+              <div class="footer-logo">
+                <mat-icon>account_balance</mat-icon>
+              </div>
+              <span class="footer-name">Tenant Manager</span>
+              <p class="footer-tagline">Rental Management Made Simple</p>
+            </div>
+            <div class="footer-links">
+              <h4>Product</h4>
+              <a routerLink="/home" (click)="closeSidebar()">Home</a>
+              <a routerLink="/all-tenants" (click)="closeSidebar()">All Tenants</a>
+            </div>
+            <div class="footer-links">
+              <h4>Support</h4>
+              <a href="#" (click)="$event.preventDefault()">Help Center</a>
+              <a href="#" (click)="$event.preventDefault()">Contact</a>
+            </div>
+            <div class="footer-legal">
+              <h4>Legal</h4>
+              <a href="#" (click)="$event.preventDefault()">Privacy</a>
+              <a href="#" (click)="$event.preventDefault()">Terms</a>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <p class="copyright">&copy; {{ currentYear }} Tenant Manager. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
     
     <!-- For routes that don't show toolbar -->

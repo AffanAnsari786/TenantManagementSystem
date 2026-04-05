@@ -33,7 +33,7 @@ export class EntryFormComponent {
 
     this.entryForm = this.fb.group({
       rentPeriod: ['', Validators.required],
-      amount: ['', [Validators.required, Validators.min(0)]],
+      amount: ['', [Validators.required, Validators.min(0.01)]],
       receivedDate: ['', Validators.required],
       createdDate: [new Date()]
     });

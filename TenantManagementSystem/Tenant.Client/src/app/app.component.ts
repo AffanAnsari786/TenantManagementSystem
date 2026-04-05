@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { filter } from 'rxjs';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -16,8 +17,12 @@ import { filter } from 'rxjs';
 export class AppComponent {
   showToolbar = true;
   sidenavOpened = false;
+  currentYear = new Date().getFullYear();
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
@@ -37,8 +42,8 @@ export class AppComponent {
   }
 
   onLogout() {
-    this.closeSidebar(); // Close sidebar before logout
-    localStorage.removeItem('token');
+    this.closeSidebar();
+    this.authService.logout();
     window.location.href = '/login';
   }
 }

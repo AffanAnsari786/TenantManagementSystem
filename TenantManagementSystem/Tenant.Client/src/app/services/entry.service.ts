@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface EntryRecord {
-  id: number;
+  id: string;
   rentPeriod: string;
   amount: number;
   receivedDate: string;
@@ -12,10 +12,13 @@ export interface EntryRecord {
 }
 
 export interface Entry {
-  id: number;
+  id: string;
   name: string;
   startDate: string;
   endDate: string;
+  address?: string;
+  aadhaarNumber?: string;
+  propertyName?: string;
   records: EntryRecord[];
 }
 
@@ -23,6 +26,17 @@ export interface CreateEntryRequest {
   name: string;
   startDate: string;
   endDate: string;
+  address?: string;
+  aadhaarNumber?: string;
+  propertyName?: string;
+}
+
+export interface PagedResponse<T> {
+  data: T[];
+  totalRecords: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface CreateRecordRequest {
@@ -45,11 +59,11 @@ export class EntryService {
 
   constructor(private http: HttpClient) { }
 
-  getEntries(): Observable<Entry[]> {
-    return this.http.get<Entry[]>(this.apiUrl);
+  getEntries(page: number = 1, pageSize: number = 10): Observable<PagedResponse<Entry>> {
+    return this.http.get<PagedResponse<Entry>>(`${this.apiUrl}?page=${page}&pageSize=${pageSize}`);
   }
 
-  getEntry(id: number): Observable<Entry> {
+  getEntry(id: string): Observable<Entry> {
     return this.http.get<Entry>(`${this.apiUrl}/${id}`);
   }
 
@@ -57,15 +71,23 @@ export class EntryService {
     return this.http.post<Entry>(this.apiUrl, entry);
   }
 
-  addRecord(entryId: number, record: CreateRecordRequest): Observable<EntryRecord> {
+  updateEntry(id: string, entry: CreateEntryRequest): Observable<Entry> {
+    return this.http.put<Entry>(`${this.apiUrl}/${id}`, entry);
+  }
+
+  deleteEntry(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  addRecord(entryId: string, record: CreateRecordRequest): Observable<EntryRecord> {
     return this.http.post<EntryRecord>(`${this.apiUrl}/${entryId}/records`, record);
   }
 
-  updateRecord(entryId: number, recordId: number, record: UpdateRecordRequest): Observable<EntryRecord> {
+  updateRecord(entryId: string, recordId: string, record: UpdateRecordRequest): Observable<EntryRecord> {
     return this.http.put<EntryRecord>(`${this.apiUrl}/${entryId}/records/${recordId}`, record);
   }
 
-  deleteRecord(entryId: number, recordId: number): Observable<any> {
+  deleteRecord(entryId: string, recordId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${entryId}/records/${recordId}`);
   }
 }

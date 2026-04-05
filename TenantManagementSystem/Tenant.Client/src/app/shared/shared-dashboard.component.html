@@ -26,7 +26,7 @@
               <p>You are viewing a shared dashboard. You cannot make any changes.</p>
               <div class="live-indicator">
                 <div class="pulse-dot"></div>
-                <span>Live updates every 5 seconds</span>
+                <span>Auto-refreshes every 5 seconds</span>
               </div>
             </div>
           </div>
@@ -43,14 +43,14 @@
         </mat-card>
 
         <!-- Payment Entries Table -->
-        <mat-card *ngIf="hasPayments" class="my-11">
+        <mat-card *ngIf="hasPayments" class="my-11 records">
           <mat-card-header class="table-header">
             <mat-card-title>Payment Entries</mat-card-title>
           </mat-card-header>
 
           <mat-card-content>
                       <!-- Desktop/Tablet Table View -->
-          <table mat-table [dataSource]="paymentRecords" class="mat-elevation-z2 p-5">
+          <table mat-table [dataSource]="paymentRecords" class="mat-elevation-z2 p-5 records">
             <ng-container matColumnDef="rentPeriod">
               <th mat-header-cell *matHeaderCellDef>Rent Period</th>
               <td mat-cell *matCellDef="let record">
@@ -79,6 +79,15 @@
                   <mat-icon>check_circle</mat-icon>
                   Paid
                 </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let record">
+                <button mat-icon-button class="action-btn download-btn" (click)="downloadReceipt(record.id)" title="Download Receipt" color="primary">
+                  <mat-icon>download</mat-icon>
+                </button>
               </td>
             </ng-container>
 
@@ -119,9 +128,14 @@
                 </div>
               </div>
               
-              <div class="mobile-shared-status">
-                <mat-icon style="font-size: 16px; width: 16px; height: 16px;">check_circle</mat-icon>
-                Paid
+              <div class="mobile-shared-status" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px;">check_circle</mat-icon>
+                  Paid
+                </div>
+                <button mat-icon-button color="primary" (click)="downloadReceipt(record.id)" title="Download Receipt">
+                  <mat-icon>download</mat-icon>
+                </button>
               </div>
             </div>
             
